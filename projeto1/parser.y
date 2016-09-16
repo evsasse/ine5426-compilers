@@ -1,13 +1,17 @@
 %{
-  #include <iostream>
+  #include <list>
+  #include "ast.h"
 
   extern int yylex();
   extern void yyerror(const char*);
+
+  std::list<Node*> lines;
 %}
 
 %union {
   int val_int;
-  char* val_str;
+  char *val_str;
+  Node *node;
 }
 
 %token <val_str> T_IDENTIFIER
@@ -22,38 +26,40 @@
 // D_ for declarations
 %token D_INT
 
-%type <val_int> expr
+%type <node> line declaration decl-items decl-item attribution expr
 
 %%
 
 program :
-        | program line
+        | program line { lines.push_back($2); }
 ;
-line    : T_NEWLINE
+// adds a new Node, for each line with content, to the NodeList.
+// the node to be added is returned by the content.
+line    : T_NEWLINE { $$ = nullptr; }
         | declaration T_NEWLINE
         | attribution T_NEWLINE
 ;
 
-declaration : D_INT decl-items
+declaration : D_INT decl-items { $$ = new MainIntegerDeclarationNode(static_cast<IntegerDeclarationNode*>($2)); }
 ;
 decl-items  : decl-items T_COMMA decl-item
             | decl-item
 ;
-decl-item   : T_IDENTIFIER
-            | T_IDENTIFIER T_ATTRIB V_INT
+decl-item   : T_IDENTIFIER { $$ = new IntegerDeclarationNode($1, nullptr); }
+            | T_IDENTIFIER T_ATTRIB V_INT { $$ = new IntegerInitializationNode($1, $3, nullptr);}
 ;
 
-attribution : T_IDENTIFIER T_ATTRIB expr
+attribution : T_IDENTIFIER T_ATTRIB expr { $$ = new BinaryOperationNode(new IdentifierNode($1), ATTRIB, $3); }
 ;
 
-expr  : V_INT
-      | T_IDENTIFIER
-      | T_POPEN expr T_PCLOSE
-      | T_MINUS expr
-      | expr T_PLUS expr
-      | expr T_MINUS expr
-      | expr T_TIMES expr
-      | expr T_DIVIDE expr
+expr  : V_INT { $$ = new IntegerNode($1); }
+      | T_IDENTIFIER { $$ = new IdentifierNode($1); }
+      | T_POPEN expr T_PCLOSE { $$ = $2; }
+      | T_MINUS expr { $$ = new BinaryOperationNode(new IntegerNode(0), MINUS, $2); }
+      | expr T_PLUS expr { $$ = new BinaryOperationNode($1, PLUS, $3); }
+      | expr T_MINUS expr { $$ = new BinaryOperationNode($1, MINUS, $3); }
+      | expr T_TIMES expr { $$ = new BinaryOperationNode($1, TIMES, $3); }
+      | expr T_DIVIDE expr { $$ = new BinaryOperationNode($1, DIVIDE, $3); }
 ;
 
 %%
