@@ -25,6 +25,14 @@ public:
   void print();
 };
 
+class UnaryOperationNode : public Node {
+public:
+  Node *right;
+  UnaryOperationNode(Node *right) :
+    right(right) {};
+  void print();
+};
+
 class IdentifierNode : public Node {
 public:
   std::string name;

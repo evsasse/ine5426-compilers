@@ -8,9 +8,9 @@ extern std::list<Node*> lines;
 int main(){
   yyparse();
   for(Node *line : lines){
-    std::cout << "Line[";
+    //std::cout << "Line[";
     line->print();
-    std::cout << "]";
+    //std::cout << "]";
     std::cout << std::endl;
   }
   return 0;
