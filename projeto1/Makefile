@@ -1,7 +1,7 @@
 OUTPUT=lukacompiler
 
 $(OUTPUT): parser.h parser.cpp scanner.cpp main.cpp
-	g++ -o $(OUTPUT) *.cpp
+	g++ -o $(OUTPUT) *.cpp -std=c++11
 
 parser.h: parser.y
 	bison --defines=parser.h -o parser.cpp parser.y
