@@ -10,7 +10,7 @@
 
 %union {
   int val_int;
-  char *val_str;
+  const char *val_str;
   Node *node;
 }
 
@@ -42,7 +42,7 @@ line    : T_NEWLINE { $$ = nullptr; }
 
 declaration : D_INT decl-items { $$ = new MainIntegerDeclarationNode(static_cast<IntegerDeclarationNode*>($2)); }
 ;
-decl-items  : decl-items T_COMMA decl-item
+decl-items  : decl-items T_COMMA decl-item { static_cast<IntegerDeclarationNode*>($1)->next = static_cast<IntegerDeclarationNode*>($3); }
             | decl-item
 ;
 decl-item   : T_IDENTIFIER { $$ = new IntegerDeclarationNode($1, nullptr); }

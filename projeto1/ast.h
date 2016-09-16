@@ -1,6 +1,8 @@
 #pragma once
 
-enum Operation : char { PLUS='+', MINUS='-', TIMES='*', DIVIDE='/', ATTRIB='=' };
+#include <string>
+
+enum Operation { PLUS, MINUS, TIMES, DIVIDE, ATTRIB };
 
 class Node {
 public:
@@ -25,23 +27,23 @@ public:
 
 class IdentifierNode : public Node {
 public:
-  const char *name;
-  IdentifierNode(const char *name) : name(name) {};
+  std::string name;
+  IdentifierNode(std::string name) : name(name) {};
   void print();
 };
 
 class IntegerDeclarationNode : public Node {
 public:
-  const char *identifier;
+  std::string identifier;
   IntegerDeclarationNode *next;
-  IntegerDeclarationNode(const char *identifier, IntegerDeclarationNode *next) :
+  IntegerDeclarationNode(std::string identifier, IntegerDeclarationNode *next) :
   identifier(identifier), next(next) {};
   void print();
 };
 class IntegerInitializationNode : public IntegerDeclarationNode {
 public:
   int value;
-  IntegerInitializationNode(const char *identifier,
+  IntegerInitializationNode(std::string identifier,
     int value,
     IntegerDeclarationNode *next) :
     IntegerDeclarationNode(identifier, next), value(value) {};
