@@ -32,11 +32,11 @@
 
 program :
         | program line { lines.push_back($2); }
+        | program T_NEWLINE
 ;
 // adds a new Node, for each line with content, to the NodeList.
 // the node to be added is returned by the content.
-line    : T_NEWLINE { $$ = nullptr; }
-        | declaration T_NEWLINE
+line    : declaration T_NEWLINE
         | attribution T_NEWLINE
 ;
 

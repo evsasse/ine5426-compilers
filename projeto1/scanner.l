@@ -19,7 +19,7 @@ identifier [a-zA-Z][a-zA-Z_0-9]*
 {integer}     { yylval.val_int = std::atoi(yytext); return V_INT; }
 {identifier}  { yylval.val_str = strdup(yytext); return T_IDENTIFIER; }
 
-"int "         { return D_INT; }
+"int"[ \t]    { return D_INT; }
 
 "+"           { return T_PLUS; }
 "-"           { return T_MINUS; }
