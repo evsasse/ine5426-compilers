@@ -1,5 +1,6 @@
 %{
   #include <iostream>
+  #include "ast.h"
   #include "parser.h"
 
   void lexical_error(const char*);
@@ -16,9 +17,9 @@ identifier [a-zA-Z][a-zA-Z_0-9]*
 [ \t]         { }
 
 {integer}     { yylval.val_int = std::atoi(yytext); return V_INT; }
-{identifier}  { yylval.val_str = yytext; return T_IDENTIFIER; }
+{identifier}  { yylval.val_str = strdup(yytext); return T_IDENTIFIER; }
 
-"int "         { return D_INT; }
+"int"[ \t]    { return D_INT; }
 
 "+"           { return T_PLUS; }
 "-"           { return T_MINUS; }
@@ -34,11 +35,11 @@ identifier [a-zA-Z][a-zA-Z_0-9]*
 
 %%
 
-void lexical_error(const char* s){
+void lexical_error(const char *s){
   std::cerr << "[Line " << yylineno << "] lexical error: unknown symbol "
-  << s << std::endl;
+    << s << std::endl;
 }
 
-void yyerror(const char* s){
-  std::cerr << "[Line " << yylineno << "] syntax error" << std::endl;
+void yyerror(const char *s){
+  std::cerr << "[Line " << yylineno << "]" << s << std::endl;
 }
