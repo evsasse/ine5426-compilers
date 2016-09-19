@@ -2,7 +2,11 @@
 
 #include <string>
 
-enum Operation { PLUS, MINUS, TIMES, DIVIDE, ATTRIB };
+enum Operation { NEGATIVE, NOT,
+                 ATTRIB, PLUS, MINUS, TIMES, DIVIDE,
+                 AND, OR, EQUAL, DIFFERENT, GREATER, GREATEROREQUAL,
+                 LESS, LESSOREQUAL };
+enum ValueType { INT, FLOAT, BOOL };
 
 class Node {
 public:
@@ -15,6 +19,18 @@ public:
   IntegerNode(int value) : value(value) {};
   void print();
 };
+class FloatNode : public Node {
+public:
+  float value;
+  FloatNode(float value) : value(value) {};
+  void print();
+};
+class BoolNode : public Node {
+public:
+  bool value;
+  BoolNode(bool value) : value(value) {};
+  void print();
+};
 
 class BinaryOperationNode : public Node {
 public:
@@ -24,12 +40,12 @@ public:
     left(left), operation(operation), right(right) {};
   void print();
 };
-
 class UnaryOperationNode : public Node {
 public:
+  Operation operation;
   Node *right;
-  UnaryOperationNode(Node *right) :
-    right(right) {};
+  UnaryOperationNode(Operation operation, Node *right) :
+    operation(operation), right(right) {};
   void print();
 };
 
@@ -40,26 +56,54 @@ public:
   void print();
 };
 
-class IntegerDeclarationNode : public Node {
+// class IntegerDeclarationNode : public Node {
+// public:
+//   IdentifierNode* identifier;
+//   IntegerDeclarationNode *next;
+//   IntegerDeclarationNode(IdentifierNode* identifier, IntegerDeclarationNode *next) :
+//   identifier(identifier), next(next) {};
+//   void print();
+// };
+// class IntegerInitializationNode : public IntegerDeclarationNode {
+// public:
+//   int value;
+//   IntegerInitializationNode(IdentifierNode* identifier,
+//     int value,
+//     IntegerDeclarationNode *next) :
+//     IntegerDeclarationNode(identifier, next), value(value) {};
+//   void print();
+// };
+// class MainIntegerDeclarationNode : public Node {
+// public:
+//   IntegerDeclarationNode *next;
+//   MainIntegerDeclarationNode(IntegerDeclarationNode *next): next(next) {};
+//   void print();
+//};
+
+//template <class T>
+// class DeclarationNode : public Node {
+// public:
+//   IdentifierNode *identifier;
+//   DeclarationNode *next;
+//   DeclarationNode(IdentifierNode* identifier, DeclarationNode *next = nullptr) :
+//     identifier(identifier), next(next) {};
+//   void print();
+// }
+//template <class T>
+class DeclarationNode : public Node {
 public:
-  IdentifierNode* identifier;
-  IntegerDeclarationNode *next;
-  IntegerDeclarationNode(IdentifierNode* identifier, IntegerDeclarationNode *next) :
-  identifier(identifier), next(next) {};
+  IdentifierNode *identifier;
+  DeclarationNode *next;
+  Node *value;
+  DeclarationNode(IdentifierNode* identifier, Node* value = nullptr, DeclarationNode *next = nullptr) :
+    identifier(identifier), value(value), next(next) {};
   void print();
 };
-class IntegerInitializationNode : public IntegerDeclarationNode {
+class MainDeclarationNode : public Node {
 public:
-  int value;
-  IntegerInitializationNode(IdentifierNode* identifier,
-    int value,
-    IntegerDeclarationNode *next) :
-    IntegerDeclarationNode(identifier, next), value(value) {};
-  void print();
-};
-class MainIntegerDeclarationNode : public Node {
-public:
-  IntegerDeclarationNode *next;
-  MainIntegerDeclarationNode(IntegerDeclarationNode *next): next(next) {};
+  ValueType type;
+  DeclarationNode *first;
+  MainDeclarationNode(DeclarationNode *first, ValueType type) :
+    first(first), type(type) {};
   void print();
 };
