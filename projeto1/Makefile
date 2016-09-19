@@ -15,8 +15,8 @@ clear:
 
 test:
 	echo "file 1" > test
-	./lukacompiler < tests/$(VERSION)/input/1.in | diff - tests/$(VERSION)/expected/1.ex >> test
+	-./lukacompiler < tests/$(VERSION)/input/1.in | diff -B - tests/$(VERSION)/expected/1.ex >> test
 	echo "file 2" >> test
-	./lukacompiler < tests/$(VERSION)/input/2.in | diff - tests/$(VERSION)/expected/2.ex >> test
+	-./lukacompiler < tests/$(VERSION)/input/2.in | diff -B - tests/$(VERSION)/expected/2.ex >> test
 	echo "file 3" >> test
-	./lukacompiler < tests/$(VERSION)/input/3.in | diff - tests/$(VERSION)/expected/3.ex >> test
+	-./lukacompiler < tests/$(VERSION)/input/3.in | diff -B - tests/$(VERSION)/expected/3.ex >> test

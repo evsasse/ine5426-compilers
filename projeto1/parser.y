@@ -1,11 +1,13 @@
 %{
   #include <list>
   #include "ast.h"
+  #include "st.h"
 
   extern int yylex();
   extern void yyerror(const char*);
 
   std::list<Node*> lines;
+  SymbolTable symbolTable;
 %}
 
 %union {
@@ -45,15 +47,15 @@ declaration : D_INT decl-items { $$ = new MainIntegerDeclarationNode(static_cast
 decl-items  : decl-item T_COMMA decl-items { static_cast<IntegerDeclarationNode*>($1)->next = static_cast<IntegerDeclarationNode*>($3); }
             | decl-item
 ;
-decl-item   : T_IDENTIFIER { $$ = new IntegerDeclarationNode($1, nullptr); }
-            | T_IDENTIFIER T_ATTRIB V_INT { $$ = new IntegerInitializationNode($1, $3, nullptr);}
+decl-item   : T_IDENTIFIER { $$ = new IntegerDeclarationNode(symbolTable.newSymbol($1), nullptr); }
+            | T_IDENTIFIER T_ATTRIB V_INT { $$ = new IntegerInitializationNode(symbolTable.newSymbol($1), $3, nullptr);}
 ;
 
-attribution : T_IDENTIFIER T_ATTRIB expr { $$ = new BinaryOperationNode(new IdentifierNode($1), ATTRIB, $3); }
+attribution : T_IDENTIFIER T_ATTRIB expr { $$ = new BinaryOperationNode(symbolTable.useSymbol($1), ATTRIB, $3); }
 ;
 
 expr  : V_INT { $$ = new IntegerNode($1); }
-      | T_IDENTIFIER { $$ = new IdentifierNode($1); }
+      | T_IDENTIFIER { $$ = symbolTable.useSymbol($1); }
       | T_POPEN expr T_PCLOSE { $$ = $2; }
       | T_MINUS expr { $$ = new UnaryOperationNode($2); }
       | expr T_PLUS expr { $$ = new BinaryOperationNode($1, PLUS, $3); }

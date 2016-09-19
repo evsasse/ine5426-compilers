@@ -42,16 +42,16 @@ public:
 
 class IntegerDeclarationNode : public Node {
 public:
-  std::string identifier;
+  IdentifierNode* identifier;
   IntegerDeclarationNode *next;
-  IntegerDeclarationNode(std::string identifier, IntegerDeclarationNode *next) :
+  IntegerDeclarationNode(IdentifierNode* identifier, IntegerDeclarationNode *next) :
   identifier(identifier), next(next) {};
   void print();
 };
 class IntegerInitializationNode : public IntegerDeclarationNode {
 public:
   int value;
-  IntegerInitializationNode(std::string identifier,
+  IntegerInitializationNode(IdentifierNode* identifier,
     int value,
     IntegerDeclarationNode *next) :
     IntegerDeclarationNode(identifier, next), value(value) {};

@@ -31,21 +31,25 @@ void UnaryOperationNode::print(){
 void IdentifierNode::print(){
   //std::cout << "IdentifierNode{";
   std::cout << " " << name;
+  //std::cout << name;
   //std::cout << "}";
 }
 
 void MainIntegerDeclarationNode::print(){
   //std::cout << "MainIntegerDeclarationNode{";
-  std::cout << "int var: ";
+  //std::cout << "int var: ";
+  std::cout << "int var:";
   next->print();
   //std::cout << "}";
 }
 void IntegerDeclarationNode::print(){
   //std::cout << "IntegerDeclarationNode{";
   //std::cout << "[" << identifier << "]";
-  std::cout << identifier;
+  //std::cout << identifier;
+  identifier->print();
   if(next){
-    std::cout << ", ";
+    //std::cout << ", ";
+    std::cout << ",";
     next->print();
   }
   //std::cout << "}";
@@ -53,9 +57,12 @@ void IntegerDeclarationNode::print(){
 void IntegerInitializationNode::print(){
   //std::cout << "IntegerInitializationNode{";
   //std::cout << "[" << identifier << "] = " << value;
-  std::cout << identifier << " = " << value;
+  //std::cout << identifier << " = " << value;
+  identifier->print();
+  std::cout << " = " << value;
   if(next){
-    std::cout << ", ";
+    //std::cout << ", ";
+    std::cout << ",";
     next->print();
   }
   //std::cout << "}";

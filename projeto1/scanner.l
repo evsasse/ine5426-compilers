@@ -41,5 +41,5 @@ void lexical_error(const char *s){
 }
 
 void yyerror(const char *s){
-  std::cerr << "[Line " << yylineno << "] syntax error" << std::endl;
+  std::cerr << "[Line " << yylineno << "]" << s << std::endl;
 }
