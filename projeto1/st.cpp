@@ -2,11 +2,11 @@
 
 extern void yyerror(const char*);
 
-IdentifierNode* SymbolTable::newSymbol(std::string name){
+IdentifierNode* SymbolTable::newSymbol(std::string name, ValueType type){
   if(table.find(name) != table.end()){
     yyerror("semantic error: re-declaration of variable");
   }else{
-    table[name] = new IdentifierNode(name);
+    table[name] = new IdentifierNode(name,type);
   }
   return table[name];
 }
