@@ -2,6 +2,8 @@
 
 #include "ast.h"
 
+extern void yyerror(const char*);
+
 void IntegerNode::print(){
   //std::cout << "IntegerNode{";
   std::cout << " " << value;
@@ -18,6 +20,10 @@ void BoolNode::print(){
     std::cout << "false";
 }
 
+BinaryOperationNode::BinaryOperationNode(Node *left, Operation operation, Node *right) :
+Node(left->type), left(left), operation(operation), right(right) {
+  
+};
 void BinaryOperationNode::print(){
   //std::cout << "BinaryOperationNode{";
   //left->print();
@@ -41,6 +47,13 @@ void BinaryOperationNode::print(){
   //std::cout << "}";
 }
 
+UnaryOperationNode::UnaryOperationNode(Operation operation, Node *right) :
+Node(right->type), operation(operation), right(right){
+  if(operation == NEGATIVE && type != INT && type != FLOAT)
+    yyerror("semantic error: negative operation expected integer or float but received bool");
+  else if(operation == NOT && type != BOOL)
+    yyerror("semantic error: not operation expected bool but received");
+};
 void UnaryOperationNode::print(){
   //std::cout << " -u";
   switch(operation){
@@ -57,39 +70,6 @@ void IdentifierNode::print(){
   //std::cout << "}";
 }
 
-// void MainIntegerDeclarationNode::print(){
-//   //std::cout << "MainIntegerDeclarationNode{";
-//   //std::cout << "int var: ";
-//   std::cout << "int var:";
-//   next->print();
-//   //std::cout << "}";
-// }
-// void IntegerDeclarationNode::print(){
-//   //std::cout << "IntegerDeclarationNode{";
-//   //std::cout << "[" << identifier << "]";
-//   //std::cout << identifier;
-//   identifier->print();
-//   if(next){
-//     //std::cout << ", ";
-//     std::cout << ",";
-//     next->print();
-//   }
-//   //std::cout << "}";
-// }
-// void IntegerInitializationNode::print(){
-//   //std::cout << "IntegerInitializationNode{";
-//   //std::cout << "[" << identifier << "] = " << value;
-//   //std::cout << identifier << " = " << value;
-//   identifier->print();
-//   std::cout << " = " << value;
-//   if(next){
-//     //std::cout << ", ";
-//     std::cout << ",";
-//     next->print();
-//   }
-//   //std::cout << "}";
-//}
-
 void MainDeclarationNode::print(){
   switch(type){
     case INT: std::cout << "int var:"; break;
@@ -98,6 +78,12 @@ void MainDeclarationNode::print(){
   }
   first->print();
 }
+
+DeclarationNode::DeclarationNode(IdentifierNode* identifier, Node *value, DeclarationNode *next) :
+identifier(identifier), value(value), next(next) {
+  if(value && value->type != identifier->type)
+    yyerror("semantic error: type expected at declaration different from received");
+};
 void DeclarationNode::print(){
   identifier->print();
   if(value){

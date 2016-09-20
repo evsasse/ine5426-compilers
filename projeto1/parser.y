@@ -28,6 +28,7 @@
 //tokens for integer and float operations
 %left T_PLUS T_MINUS
 %left T_TIMES T_DIVIDE
+%nonassoc T_UNARYMINUS
 //tokens for boolean operations
 %left T_AND T_OR
 %left T_EQUAL T_DIFFERENT
@@ -44,7 +45,11 @@
 %token D_FLOAT
 %token D_BOOL
 
-%type <node> line declaration decl-items decl-value decl-item attribution expr
+%type <node> line declaration decl-value
+%type <node> decl-ints decl-int
+%type <node> decl-floats decl-float
+%type <node> decl-bools decl-bool
+%type <node> attribution expr
 
 %%
 
@@ -54,40 +59,36 @@ program :
 ;
 // adds a new Node, for each line with content, to the NodeList.
 // the node to be added is returned by the content.
-//anything: anything anything
-//        | T_IDENTIFIER | T_POPEN | T_PCLOSE | T_ATTRIB | T_COMMA
-//        | T_PLUS | T_MINUS | T_TIMES | T_DIVIDE | T_AND | T_OR
-//        | T_EQUAL | T_DIFFERENT | T_GREATER | T_GREATEROREQUAL
-//        | T_LESS | T_LESSOREQUAL | T_NOT
-//        | V_INT | V_FLOAT | V_BOOL | D_INT | D_FLOAT | D_BOOL
-//;
 line    : declaration T_NEWLINE
         | attribution T_NEWLINE
-//        | anything T_LEXERROR anything T_NEWLINE { yyerror("lexical error: unknown symbol"); }
 ;
 
-//declaration : D_INT decl-items { $$ = new MainIntegerDeclarationNode(static_cast<IntegerDeclarationNode*>($2)); }
-//;
-//decl-items  : decl-item T_COMMA decl-items { static_cast<IntegerDeclarationNode*>($1)->next = static_cast<IntegerDeclarationNode*>($3); }
-//            | decl-item
-//;
-//decl-item   : T_IDENTIFIER { $$ = new IntegerDeclarationNode(symbolTable.newSymbol($1), nullptr); }
-//            | T_IDENTIFIER T_ATTRIB V_INT { $$ = new IntegerInitializationNode(symbolTable.newSymbol($1), $3, nullptr);}
-//;
-
-declaration : D_INT decl-items { $$ = new MainDeclarationNode(static_cast<DeclarationNode*>($2), INT); }
-            | D_FLOAT decl-items { $$ = new MainDeclarationNode(static_cast<DeclarationNode*>($2), FLOAT); }
-            | D_BOOL decl-items { $$ = new MainDeclarationNode(static_cast<DeclarationNode*>($2), BOOL); }
-;
-decl-items  : decl-item T_COMMA decl-items { static_cast<DeclarationNode*>($1)->next = static_cast<DeclarationNode*>($3); }
-            | decl-item
+declaration : D_INT decl-ints { $$ = new MainDeclarationNode(static_cast<DeclarationNode*>($2), INT); }
+            | D_FLOAT decl-floats { $$ = new MainDeclarationNode(static_cast<DeclarationNode*>($2), FLOAT); }
+            | D_BOOL decl-bools { $$ = new MainDeclarationNode(static_cast<DeclarationNode*>($2), BOOL); }
 ;
 decl-value  : V_INT { $$ = new IntegerNode($1); }
             | V_FLOAT { $$ = new FloatNode($1); }
             | V_BOOL { $$ = new BoolNode($1); }
 ;
-decl-item   : T_IDENTIFIER { $$ = new DeclarationNode(symbolTable.newSymbol($1)); }
-            | T_IDENTIFIER T_ATTRIB decl-value { $$ = new DeclarationNode(symbolTable.newSymbol($1), $3); }
+decl-ints   : decl-int T_COMMA decl-ints { static_cast<DeclarationNode*>($1)->next = static_cast<DeclarationNode*>($3); }
+            | decl-int
+;
+decl-int    : T_IDENTIFIER { $$ = new DeclarationNode(symbolTable.newSymbol($1,INT)); }
+            | T_IDENTIFIER T_ATTRIB decl-value { $$ = new DeclarationNode(symbolTable.newSymbol($1,INT), $3); }
+;
+decl-floats : decl-float T_COMMA decl-floats { static_cast<DeclarationNode*>($1)->next = static_cast<DeclarationNode*>($3); }
+            | decl-float
+;
+decl-float  : T_IDENTIFIER { $$ = new DeclarationNode(symbolTable.newSymbol($1,FLOAT)); }
+            | T_IDENTIFIER T_ATTRIB decl-value { $$ = new DeclarationNode(symbolTable.newSymbol($1,FLOAT), $3); }
+;
+decl-bools  : decl-bool T_COMMA decl-bools { static_cast<DeclarationNode*>($1)->next = static_cast<DeclarationNode*>($3); }
+            | decl-bool
+;
+decl-bool   : T_IDENTIFIER { $$ = new DeclarationNode(symbolTable.newSymbol($1,BOOL)); }
+            | T_IDENTIFIER T_ATTRIB decl-value { $$ = new DeclarationNode(symbolTable.newSymbol($1,BOOL), $3); }
+;
 
 attribution : T_IDENTIFIER T_ATTRIB expr { $$ = new BinaryOperationNode(symbolTable.useSymbol($1), ATTRIB, $3); }
 ;
@@ -97,7 +98,7 @@ expr  : V_INT { $$ = new IntegerNode($1); }
       | V_BOOL { $$ = new BoolNode($1); }
       | T_IDENTIFIER { $$ = symbolTable.useSymbol($1); }
       | T_POPEN expr T_PCLOSE { $$ = $2; }
-      | T_MINUS expr { $$ = new UnaryOperationNode(NEGATIVE, $2); }
+      | T_MINUS expr %prec T_UNARYMINUS { $$ = new UnaryOperationNode(NEGATIVE, $2); }
       | T_NOT expr { $$ = new UnaryOperationNode(NOT, $2); }
       | expr T_PLUS expr { $$ = new BinaryOperationNode($1, PLUS, $3); }
       | expr T_MINUS expr { $$ = new BinaryOperationNode($1, MINUS, $3); }
