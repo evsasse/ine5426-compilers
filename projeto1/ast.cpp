@@ -1,4 +1,5 @@
 #include <iostream>
+#include <algorithm>
 
 #include "ast.h"
 
@@ -22,7 +23,39 @@ void BoolNode::print(){
 
 BinaryOperationNode::BinaryOperationNode(Node *left, Operation operation, Node *right) :
 Node(left->type), left(left), operation(operation), right(right) {
-  
+  if(operation == GREATER || operation == GREATEROREQUAL || operation == LESS || operation == LESSOREQUAL){
+    //relational operation
+    Node::type = BOOL;
+    if((left->type != INT && left->type != FLOAT)||((right->type != INT && right->type != FLOAT))){
+      yyerror("semantic error: relational operation expected int or float but received");
+    }
+  }
+  else if(operation == EQUAL || operation == DIFFERENT){
+    //comparison operation
+    Node::type = BOOL;
+    if(left->type != right->type){
+      yyerror("semantic error: comparison operation expected but received");
+    }
+  }
+  else if(operation == PLUS || operation == MINUS || operation == TIMES || operation == DIVIDE){
+    //math operations
+    if((left->type != INT && left->type != FLOAT)||((right->type != INT && right->type != FLOAT))){
+      yyerror("semantic error: math operation expected int or float but received");
+    }
+  }
+  else if(operation == ATTRIB){
+    //attribution operation
+    if(left->type != right->type){
+      yyerror("semantic error: attribution operation expected but received");
+    }
+  }
+  else if(operation == AND || operation == OR){
+    //logical operations
+    Node::type = BOOL;
+    if(left->type != BOOL || right->type != BOOL){
+      yyerror("semantic error: logical operation expected bool but received");
+    }
+  }
 };
 void BinaryOperationNode::print(){
   //std::cout << "BinaryOperationNode{";
@@ -49,10 +82,14 @@ void BinaryOperationNode::print(){
 
 UnaryOperationNode::UnaryOperationNode(Operation operation, Node *right) :
 Node(right->type), operation(operation), right(right){
-  if(operation == NEGATIVE && type != INT && type != FLOAT)
+  if(operation == NEGATIVE && type != INT && type != FLOAT){
+    Node::type = INT;
     yyerror("semantic error: negative operation expected integer or float but received bool");
-  else if(operation == NOT && type != BOOL)
+  }
+  else if(operation == NOT && type != BOOL){
+    Node::type = BOOL;
     yyerror("semantic error: not operation expected bool but received");
+  }
 };
 void UnaryOperationNode::print(){
   //std::cout << " -u";
