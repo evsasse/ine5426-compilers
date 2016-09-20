@@ -38,17 +38,24 @@ Node(left->type), left(left), operation(operation), right(right) {
   }
   else if(operation == PLUS || operation == MINUS || operation == TIMES || operation == DIVIDE){
     //math operations
-    if(left->type == FLOAT || right->type == FLOAT){
-      Node::type = FLOAT;
+    if(left->type == FLOAT && right->type == INT){
+      this->right = new UnaryOperationNode(CFLOAT,right);
     }
-    if((left->type != INT && left->type != FLOAT)||((right->type != INT && right->type != FLOAT))){
+    else if(left->type == INT && right->type == FLOAT){
+      Node::type = FLOAT;
+      this->left = new UnaryOperationNode(CFLOAT,left);
+    }
+    else if((left->type != INT && left->type != FLOAT)||((right->type != INT && right->type != FLOAT))){
       yyerror("semantic error: math operation expected int or float but received");
     }
   }
   else if(operation == ATTRIB){
     //attribution operation
-    if(left->type == FLOAT && right->type == INT) return;
-    if(left->type != right->type){
+    if(left->type == FLOAT && right->type == INT){
+      this-> right = new UnaryOperationNode(CFLOAT,right);
+      return;
+    }
+    else if(left->type != right->type){
       yyerror("semantic error: attribution operation expected but received");
     }
   }
@@ -132,7 +139,9 @@ void MainDeclarationNode::print(){
 
 DeclarationNode::DeclarationNode(IdentifierNode* identifier, Node *value, DeclarationNode *next) :
 identifier(identifier), value(value), next(next) {
-  if(value && value->type != identifier->type)
+  if(value && value->type == INT && identifier->type == FLOAT)
+    this->value = new UnaryOperationNode(CFLOAT,value);
+  else if(value && value->type != identifier->type)
     yyerror("semantic error: type expected at declaration different from received");
 };
 void DeclarationNode::print(){
