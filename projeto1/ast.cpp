@@ -1,5 +1,4 @@
 #include <iostream>
-#include <algorithm>
 
 #include "ast.h"
 
@@ -39,6 +38,9 @@ Node(left->type), left(left), operation(operation), right(right) {
   }
   else if(operation == PLUS || operation == MINUS || operation == TIMES || operation == DIVIDE){
     //math operations
+    if(left->type == FLOAT || right->type == FLOAT){
+      Node::type = FLOAT;
+    }
     if((left->type != INT && left->type != FLOAT)||((right->type != INT && right->type != FLOAT))){
       yyerror("semantic error: math operation expected int or float but received");
     }

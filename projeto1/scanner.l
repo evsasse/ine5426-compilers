@@ -53,7 +53,6 @@ identifier [a-zA-Z][a-zA-Z_0-9]*
 void lexical_error(const char *s){
   std::cerr << "[Line " << yylineno << "] lexical error: unknown symbol "
     << s << std::endl;
-  exit(1);
 }
 
 void yyerror(const char *s){
