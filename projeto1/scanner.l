@@ -27,6 +27,9 @@ identifier [a-zA-Z][a-zA-Z_0-9]*
 "float"[ \t]    { return D_FLOAT; }
 "bool"[ \t]    { return D_BOOL; }
 
+"[int]"       { return T_INT; }
+"[float]"       { return T_FLOAT; }
+"[bool]"       { return T_BOOL; }
 "+"           { return T_PLUS; }
 "-"           { return T_MINUS; }
 "*"           { return T_TIMES; }

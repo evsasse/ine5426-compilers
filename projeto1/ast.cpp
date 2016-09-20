@@ -47,6 +47,7 @@ Node(left->type), left(left), operation(operation), right(right) {
   }
   else if(operation == ATTRIB){
     //attribution operation
+    if(left->type == FLOAT && right->type == INT) return;
     if(left->type != right->type){
       yyerror("semantic error: attribution operation expected but received");
     }
@@ -92,12 +93,23 @@ Node(right->type), operation(operation), right(right){
     Node::type = BOOL;
     yyerror("semantic error: not operation expected bool but received");
   }
+  else if(operation == CINT){
+    Node::type = INT;
+  }
+  else if(operation == CFLOAT){
+    Node::type = FLOAT;
+  }
+  else if(operation == CBOOL){
+    Node::type = BOOL;
+  }
 };
 void UnaryOperationNode::print(){
-  //std::cout << " -u";
   switch(operation){
     case NEGATIVE: std::cout << " -u"; break;
     case NOT: std::cout << " !"; break;
+    case CINT: std::cout << " [int]"; break;
+    case CFLOAT: std::cout << " [float]"; break;
+    case CBOOL: std::cout << " [bool]"; break;
   }
   right->print();
 }

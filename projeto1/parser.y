@@ -26,6 +26,7 @@
 %token T_POPEN T_PCLOSE
 %token T_ATTRIB T_COMMA
 //tokens for integer and float operations
+%left T_INT T_FLOAT T_BOOL
 %left T_PLUS T_MINUS
 %left T_TIMES T_DIVIDE
 %nonassoc T_UNARYMINUS
@@ -98,6 +99,9 @@ expr  : V_INT { $$ = new IntegerNode($1); }
       | V_BOOL { $$ = new BoolNode($1); }
       | T_IDENTIFIER { $$ = symbolTable.useSymbol($1); }
       | T_POPEN expr T_PCLOSE { $$ = $2; }
+      | T_INT expr { $$ = new UnaryOperationNode(CINT, $2); }
+      | T_FLOAT expr { $$ = new UnaryOperationNode(CFLOAT, $2); }
+      | T_BOOL expr { $$ = new UnaryOperationNode(CBOOL, $2); }
       | T_MINUS expr %prec T_UNARYMINUS { $$ = new UnaryOperationNode(NEGATIVE, $2); }
       | T_NOT expr { $$ = new UnaryOperationNode(NOT, $2); }
       | expr T_PLUS expr { $$ = new BinaryOperationNode($1, PLUS, $3); }
