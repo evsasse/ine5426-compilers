@@ -1,5 +1,4 @@
 #include <iostream>
-#include <algorithm>
 
 #include "ast.h"
 
@@ -39,13 +38,24 @@ Node(left->type), left(left), operation(operation), right(right) {
   }
   else if(operation == PLUS || operation == MINUS || operation == TIMES || operation == DIVIDE){
     //math operations
-    if((left->type != INT && left->type != FLOAT)||((right->type != INT && right->type != FLOAT))){
+    if(left->type == FLOAT && right->type == INT){
+      this->right = new UnaryOperationNode(CFLOAT,right);
+    }
+    else if(left->type == INT && right->type == FLOAT){
+      Node::type = FLOAT;
+      this->left = new UnaryOperationNode(CFLOAT,left);
+    }
+    else if((left->type != INT && left->type != FLOAT)||((right->type != INT && right->type != FLOAT))){
       yyerror("semantic error: math operation expected int or float but received");
     }
   }
   else if(operation == ATTRIB){
     //attribution operation
-    if(left->type != right->type){
+    if(left->type == FLOAT && right->type == INT){
+      this-> right = new UnaryOperationNode(CFLOAT,right);
+      return;
+    }
+    else if(left->type != right->type){
       yyerror("semantic error: attribution operation expected but received");
     }
   }
@@ -90,12 +100,23 @@ Node(right->type), operation(operation), right(right){
     Node::type = BOOL;
     yyerror("semantic error: not operation expected bool but received");
   }
+  else if(operation == CINT){
+    Node::type = INT;
+  }
+  else if(operation == CFLOAT){
+    Node::type = FLOAT;
+  }
+  else if(operation == CBOOL){
+    Node::type = BOOL;
+  }
 };
 void UnaryOperationNode::print(){
-  //std::cout << " -u";
   switch(operation){
     case NEGATIVE: std::cout << " -u"; break;
     case NOT: std::cout << " !"; break;
+    case CINT: std::cout << " [int]"; break;
+    case CFLOAT: std::cout << " [float]"; break;
+    case CBOOL: std::cout << " [bool]"; break;
   }
   right->print();
 }
@@ -118,7 +139,9 @@ void MainDeclarationNode::print(){
 
 DeclarationNode::DeclarationNode(IdentifierNode* identifier, Node *value, DeclarationNode *next) :
 identifier(identifier), value(value), next(next) {
-  if(value && value->type != identifier->type)
+  if(value && value->type == INT && identifier->type == FLOAT)
+    this->value = new UnaryOperationNode(CFLOAT,value);
+  else if(value && value->type != identifier->type)
     yyerror("semantic error: type expected at declaration different from received");
 };
 void DeclarationNode::print(){

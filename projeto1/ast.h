@@ -2,7 +2,7 @@
 
 #include <string>
 
-enum Operation { NEGATIVE, NOT,
+enum Operation { NEGATIVE, NOT, CINT, CFLOAT, CBOOL,
                  ATTRIB, PLUS, MINUS, TIMES, DIVIDE,
                  AND, OR, EQUAL, DIFFERENT, GREATER, GREATEROREQUAL,
                  LESS, LESSOREQUAL };
