@@ -21,8 +21,9 @@ public:
 };
 class FloatNode : public Node {
 public:
+  std::string as_declared;
   float value;
-  FloatNode(float value) : value(value) {};
+  FloatNode(std::string value) : as_declared(value), value(std::stof(value)) {};
   void print();
 };
 class BoolNode : public Node {

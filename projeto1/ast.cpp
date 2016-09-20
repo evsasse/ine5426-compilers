@@ -8,7 +8,7 @@ void IntegerNode::print(){
   //std::cout << "}";
 }
 void FloatNode::print(){
-  std::cout << " " << value;
+  std::cout << " " << as_declared;
 }
 void BoolNode::print(){
   std::cout << " ";

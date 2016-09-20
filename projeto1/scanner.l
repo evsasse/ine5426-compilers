@@ -19,7 +19,7 @@ identifier [a-zA-Z][a-zA-Z_0-9]*
 [ \t]         { }
 
 {integer}     { yylval.val_int = std::atoi(yytext); return V_INT; }
-{float}       { yylval.val_float = std::atof(yytext); return V_FLOAT; }
+{float}       { yylval.val_str = strdup(yytext); return V_FLOAT; }
 {bool}        { yylval.val_bool = strcmp("true",yytext) == 0; return V_BOOL; }
 {identifier}  { yylval.val_str = strdup(yytext); return T_IDENTIFIER; }
 
@@ -53,6 +53,7 @@ identifier [a-zA-Z][a-zA-Z_0-9]*
 void lexical_error(const char *s){
   std::cerr << "[Line " << yylineno << "] lexical error: unknown symbol "
     << s << std::endl;
+  exit(1);
 }
 
 void yyerror(const char *s){

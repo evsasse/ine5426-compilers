@@ -18,6 +18,8 @@
   Node *node;
 }
 
+//%token <val_str> T_LEXERROR
+
 %token <val_str> T_IDENTIFIER
 %token T_NEWLINE
 //tokens for expressions
@@ -34,7 +36,8 @@
 
 // V_ for values
 %token <val_int> V_INT
-%token <val_float> V_FLOAT
+//%token <val_float> V_FLOAT
+%token <val_str> V_FLOAT
 %token <val_bool> V_BOOL
 // D_ for declarations
 %token D_INT
@@ -51,8 +54,16 @@ program :
 ;
 // adds a new Node, for each line with content, to the NodeList.
 // the node to be added is returned by the content.
+//anything: anything anything
+//        | T_IDENTIFIER | T_POPEN | T_PCLOSE | T_ATTRIB | T_COMMA
+//        | T_PLUS | T_MINUS | T_TIMES | T_DIVIDE | T_AND | T_OR
+//        | T_EQUAL | T_DIFFERENT | T_GREATER | T_GREATEROREQUAL
+//        | T_LESS | T_LESSOREQUAL | T_NOT
+//        | V_INT | V_FLOAT | V_BOOL | D_INT | D_FLOAT | D_BOOL
+//;
 line    : declaration T_NEWLINE
         | attribution T_NEWLINE
+//        | anything T_LEXERROR anything T_NEWLINE { yyerror("lexical error: unknown symbol"); }
 ;
 
 //declaration : D_INT decl-items { $$ = new MainIntegerDeclarationNode(static_cast<IntegerDeclarationNode*>($2)); }
