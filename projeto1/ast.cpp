@@ -41,7 +41,13 @@ Node(left->type), left(left), operation(operation), right(right) {
   if(operation == GREATER || operation == GREATEROREQUAL || operation == LESS || operation == LESSOREQUAL){
     //relational operation
     Node::type = BOOL;
-    if((left->type != INT && left->type != FLOAT)||((right->type != INT && right->type != FLOAT))){
+    if(left->type == FLOAT && right->type == INT){
+      this->right = new UnaryOperationNode(CFLOAT,right);
+    }
+    else if(left->type == INT && right->type == FLOAT){
+      this->left = new UnaryOperationNode(CFLOAT,left);
+    }
+    else if((left->type != INT && left->type != FLOAT)||((right->type != INT && right->type != FLOAT))){
       yyerror("semantic error: relational operation expected int or float but received");
     }
   }
