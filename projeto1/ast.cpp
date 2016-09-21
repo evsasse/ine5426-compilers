@@ -4,6 +4,13 @@
 
 extern void yyerror(const char*);
 
+void BlockNode::print(){
+  for(Node *line : *this){
+    line->print();
+    std::cout << std::endl;
+  }
+}
+
 void IntegerNode::print(){
   //std::cout << "IntegerNode{";
   std::cout << " " << value;

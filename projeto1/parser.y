@@ -6,7 +6,7 @@
   extern int yylex();
   extern void yyerror(const char*);
 
-  std::list<Node*> lines;
+  BlockNode lines;
   SymbolTable symbolTable;
 %}
 
@@ -16,6 +16,7 @@
   bool val_bool;
   const char *val_str;
   Node *node;
+  BlockNode *block;
 }
 
 %token <val_str> T_IDENTIFIER
@@ -55,20 +56,17 @@
 %type <node> decl-floats decl-float
 %type <node> decl-bools decl-bool
 %type <node> attribution expr
+%type <block> block
 
 %%
 
-program :
-        | program line { lines.push_back($2); }
-        | program T_NEWLINE
+program : block { lines = *$1; }
 ;
-ifthenelse  : T_IF expr T_NEWLINE T_THEN T_CBOPEN T_NEWLINE line T_CBCLOSE else { $$ = $7; }
+block   : { $$ = new BlockNode(); }
+        | block line { $1->push_back($2); }
+        | block T_NEWLINE
 ;
-else        : { $$ = nullptr; }
-            | T_ELSE T_CBOPEN T_NEWLINE line T_CBCLOSE { $$ = $4; }
-;
-// adds a new Node, for each line with content, to the NodeList.
-// the node to be added is returned by the content.
+
 line    : declaration T_NEWLINE
         | attribution T_NEWLINE
         | ifthenelse T_NEWLINE
@@ -102,6 +100,12 @@ decl-bool   : T_IDENTIFIER { $$ = new DeclarationNode(symbolTable.newSymbol($1,B
 ;
 
 attribution : T_IDENTIFIER T_ATTRIB expr { $$ = new BinaryOperationNode(symbolTable.useSymbol($1), ATTRIB, $3); }
+;
+
+ifthenelse  : T_IF expr T_NEWLINE T_THEN T_CBOPEN T_NEWLINE block T_CBCLOSE else { $$ = $7; }
+;
+else        : { $$ = nullptr; }
+            | T_ELSE T_CBOPEN T_NEWLINE block T_CBCLOSE { $$ = $4; }
 ;
 
 expr  : V_INT { $$ = new IntegerNode($1); }
