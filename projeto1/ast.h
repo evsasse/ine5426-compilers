@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <list>
 
 enum Operation { NEGATIVE, NOT, CINT, CFLOAT, CBOOL,
                  ATTRIB, PLUS, MINUS, TIMES, DIVIDE,
@@ -16,6 +17,13 @@ public:
 protected:
   Node(ValueType type) :
     type(type) {};
+};
+
+class BlockNode : public std::list<Node*>, public Node {
+public:
+  static int tabs;
+  BlockNode() {};
+  void print();
 };
 
 class IntegerNode : public Node {
@@ -77,5 +85,13 @@ public:
   DeclarationNode *first;
   MainDeclarationNode(DeclarationNode *first, ValueType type) :
     Node(type), first(first) {};
+  void print();
+};
+
+class IfThenElseNode : public Node {
+public:
+  Node* _if;
+  BlockNode *then, *_else;
+  IfThenElseNode(Node *_if, BlockNode *then, BlockNode *_else = nullptr);
   void print();
 };

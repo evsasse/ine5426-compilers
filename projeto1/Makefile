@@ -29,3 +29,7 @@ test:
 	-./lukacompiler < tests/v0.3/input/1.in | diff -B - tests/v0.3/expected/1.ex >> test
 	echo "v0.3/2" >> test
 	-./lukacompiler < tests/v0.3/input/2.in | diff -B - tests/v0.3/expected/2.ex >> test
+	echo "v0.4/1" >> test
+	-./lukacompiler < tests/v0.4/input/1.in | diff -B - tests/v0.4/expected/1.ex >> test
+	echo "v0.4/2" >> test
+	-./lukacompiler < tests/v0.4/input/2.in | diff -B - tests/v0.4/expected/2.ex >> test

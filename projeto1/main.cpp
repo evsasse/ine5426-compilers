@@ -3,7 +3,7 @@
 #include "ast.h"
 
 extern int yyparse();
-extern std::list<Node*> lines;
+extern BlockNode lines;
 
 int main(){
   yyparse();

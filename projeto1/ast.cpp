@@ -1,8 +1,24 @@
 #include <iostream>
+#include <iomanip>
 
 #include "ast.h"
 
 extern void yyerror(const char*);
+
+int BlockNode::tabs = 0;
+void BlockNode::print(){
+  //std::cout << "[";
+  tabs++;
+  for(Node *line : *this){
+    for(int i=0; i<tabs; i++)
+      std::cout << "  ";
+    line->print();
+    if(line != this->back())
+      std::cout << std::endl;
+  }
+  tabs--;
+  //std::cout << "]";
+}
 
 void IntegerNode::print(){
   //std::cout << "IntegerNode{";
@@ -25,7 +41,13 @@ Node(left->type), left(left), operation(operation), right(right) {
   if(operation == GREATER || operation == GREATEROREQUAL || operation == LESS || operation == LESSOREQUAL){
     //relational operation
     Node::type = BOOL;
-    if((left->type != INT && left->type != FLOAT)||((right->type != INT && right->type != FLOAT))){
+    if(left->type == FLOAT && right->type == INT){
+      this->right = new UnaryOperationNode(CFLOAT,right);
+    }
+    else if(left->type == INT && right->type == FLOAT){
+      this->left = new UnaryOperationNode(CFLOAT,left);
+    }
+    else if((left->type != INT && left->type != FLOAT)||((right->type != INT && right->type != FLOAT))){
       yyerror("semantic error: relational operation expected int or float but received");
     }
   }
@@ -153,5 +175,27 @@ void DeclarationNode::print(){
   if(next){
     std::cout << ",";
     next->print();
+  }
+}
+
+IfThenElseNode::IfThenElseNode(Node *_if, BlockNode *then, BlockNode *_else) :
+_if(_if), then(then), _else(_else) {
+  if(_if->type != BOOL)
+    yyerror("semantic error: test operation expected boolean but received");
+}
+void IfThenElseNode::print(){
+  std::cout << "if:";
+  _if->print();
+  std::cout << std::endl;
+  for(int i=0; i<BlockNode::tabs; i++)
+    std::cout << "  ";
+  std::cout << "then:" << std::endl;
+  then->print();
+  if(_else){
+    std::cout << std::endl;
+    for(int i=0; i<BlockNode::tabs; i++)
+      std::cout << "  ";
+    std::cout << "else:" << std::endl;
+    _else->print();
   }
 }
