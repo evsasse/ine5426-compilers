@@ -21,9 +21,8 @@ protected:
 
 class BlockNode : public std::list<Node*>, public Node {
 public:
-  bool mainBlock;
-  BlockNode(bool mainBlock = false) :
-    mainBlock(mainBlock) {};
+  static int tabs;
+  BlockNode() {};
   void print();
 };
 
@@ -86,5 +85,13 @@ public:
   DeclarationNode *first;
   MainDeclarationNode(DeclarationNode *first, ValueType type) :
     Node(type), first(first) {};
+  void print();
+};
+
+class IfThenElseNode : public Node {
+public:
+  Node* _if;
+  BlockNode *then, *_else;
+  IfThenElseNode(Node *_if, BlockNode *then, BlockNode *_else = nullptr);
   void print();
 };

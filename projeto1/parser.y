@@ -28,17 +28,17 @@
 %token T_IF T_THEN T_ELSE
 %token T_CBOPEN T_CBCLOSE
 
-//tokens for math operations
-%left T_INT T_FLOAT T_BOOL
-%left T_PLUS T_MINUS
-%left T_TIMES T_DIVIDE
-%nonassoc T_UNARYMINUS
-
 //tokens for boolean operations
 %left T_AND T_OR
 %left T_EQUAL T_DIFFERENT
 %left T_GREATER T_GREATEROREQUAL T_LESS T_LESSOREQUAL
 %left T_NOT
+
+//tokens for math operations
+%left T_INT T_FLOAT T_BOOL
+%left T_PLUS T_MINUS
+%left T_TIMES T_DIVIDE
+%nonassoc T_UNARYMINUS
 
 // V_ for values
 %token <val_int> V_INT
@@ -50,13 +50,13 @@
 %token D_FLOAT
 %token D_BOOL
 
-%type <node> ifthenelse else
+%type <node> ifthenelse
 %type <node> line declaration decl-value
 %type <node> decl-ints decl-int
 %type <node> decl-floats decl-float
 %type <node> decl-bools decl-bool
 %type <node> attribution expr
-%type <block> block
+%type <block> block else
 
 %%
 
@@ -102,7 +102,7 @@ decl-bool   : T_IDENTIFIER { $$ = new DeclarationNode(symbolTable.newSymbol($1,B
 attribution : T_IDENTIFIER T_ATTRIB expr { $$ = new BinaryOperationNode(symbolTable.useSymbol($1), ATTRIB, $3); }
 ;
 
-ifthenelse  : T_IF expr T_NEWLINE T_THEN T_CBOPEN T_NEWLINE block T_CBCLOSE else { $$ = $7; }
+ifthenelse  : T_IF expr T_NEWLINE T_THEN T_CBOPEN T_NEWLINE block T_CBCLOSE else { $$ = new IfThenElseNode($2, $7, $9); }
 ;
 else        : { $$ = nullptr; }
             | T_ELSE T_CBOPEN T_NEWLINE block T_CBCLOSE { $$ = $4; }
