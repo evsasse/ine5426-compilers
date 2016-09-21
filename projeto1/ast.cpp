@@ -7,14 +7,17 @@ extern void yyerror(const char*);
 
 int BlockNode::tabs = 0;
 void BlockNode::print(){
+  //std::cout << "[";
   tabs++;
   for(Node *line : *this){
     for(int i=0; i<tabs; i++)
       std::cout << "  ";
     line->print();
-    std::cout << std::endl;
+    if(line != this->back())
+      std::cout << std::endl;
   }
   tabs--;
+  //std::cout << "]";
 }
 
 void IntegerNode::print(){
@@ -183,6 +186,9 @@ void IfThenElseNode::print(){
   std::cout << "then:" << std::endl;
   then->print();
   if(_else){
+    std::cout << std::endl;
+    for(int i=0; i<BlockNode::tabs; i++)
+      std::cout << "  ";
     std::cout << "else:" << std::endl;
     _else->print();
   }
