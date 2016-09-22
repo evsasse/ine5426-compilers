@@ -199,3 +199,22 @@ void IfThenElseNode::print(){
     _else->print();
   }
 }
+
+ForNode::ForNode(Node *init, Node *test, Node *iter, BlockNode *block) :
+init(init), test(test), iter(iter), block(block) {
+  if(test->type != BOOL)
+    yyerror("semantic error: test operation expected boolean but received");
+}
+void ForNode::print(){
+  std::cout << "for: ";
+  if(init) init->print();
+  std::cout << ",";
+  test->print();
+  std::cout << ", ";
+  if(iter) iter->print();
+  std::cout << std::endl;
+  for(int i=0; i<BlockNode::tabs; i++)
+    std::cout << "  ";
+  std::cout << "do:" << std::endl;
+  block->print();
+}

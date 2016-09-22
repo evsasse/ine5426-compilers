@@ -25,7 +25,7 @@
 %token T_POPEN T_PCLOSE
 %token T_ATTRIB T_COMMA
 
-%token T_IF T_THEN T_ELSE
+%token T_IF T_THEN T_ELSE T_FOR
 %token T_CBOPEN T_CBCLOSE
 
 //tokens for boolean operations
@@ -50,7 +50,7 @@
 %token D_FLOAT
 %token D_BOOL
 
-%type <node> ifthenelse
+%type <node> ifthenelse for for-init for-iter
 %type <node> line declaration decl-value
 %type <node> decl-ints decl-int
 %type <node> decl-floats decl-float
@@ -70,6 +70,7 @@ block   : { $$ = new BlockNode(); }
 line    : declaration T_NEWLINE
         | attribution T_NEWLINE
         | ifthenelse T_NEWLINE
+        | for T_NEWLINE
 ;
 
 declaration : D_INT decl-ints { $$ = new MainDeclarationNode(static_cast<DeclarationNode*>($2), INT); }
@@ -106,6 +107,14 @@ ifthenelse  : T_IF expr T_NEWLINE T_THEN T_CBOPEN T_NEWLINE block T_CBCLOSE else
 ;
 else        : { $$ = nullptr; }
             | T_ELSE T_CBOPEN T_NEWLINE block T_CBCLOSE { $$ = $4; }
+;
+for         : T_FOR for-init T_COMMA expr T_COMMA for-iter T_CBOPEN T_NEWLINE block T_CBCLOSE { $$ = new ForNode($2, $4, $6, $9); }
+;
+for-init    : { $$ = nullptr; }
+            | attribution
+;
+for-iter    : { $$ = nullptr; }
+            | attribution
 ;
 
 expr  : V_INT { $$ = new IntegerNode($1); }

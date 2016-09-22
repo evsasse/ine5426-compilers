@@ -30,6 +30,7 @@ identifier [a-zA-Z][a-zA-Z_0-9]*
 "if"[ \t]     { return T_IF; }
 "then"[ \t]   { return T_THEN; }
 "else"[ \t]   { return T_ELSE; }
+"for"[ \t]   { return T_FOR; }
 "{"           { return T_CBOPEN; }
 "}"           { return T_CBCLOSE; }
 
