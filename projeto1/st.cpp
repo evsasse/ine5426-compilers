@@ -12,9 +12,11 @@ IdentifierNode* SymbolTable::newSymbol(std::string name, ValueType type){
 }
 
 IdentifierNode* SymbolTable::useSymbol(std::string name){
-  if(table.find(name) == table.end()){
+  if(!previous && table.find(name) == table.end()){
     yyerror("semantic error: undeclared variable");
     return nullptr;
+  } else if(table.find(name) == table.end()){
+    return previous->useSymbol(name);
   }else{
     return table[name];
   }
