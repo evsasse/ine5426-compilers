@@ -95,3 +95,11 @@ public:
   IfThenElseNode(Node *_if, BlockNode *then, BlockNode *_else = nullptr);
   void print();
 };
+
+class ForNode : public Node {
+public:
+  Node *init, *test, *iter;
+  BlockNode *block;
+  ForNode(Node *init, Node *test, Node *iter, BlockNode *block);
+  void print();
+};
