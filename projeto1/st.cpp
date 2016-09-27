@@ -2,7 +2,7 @@
 
 extern void yyerror(const char*);
 
-IdentifierNode* SymbolTable::newSymbol(std::string name, ValueType type){
+IdentifierNode* SymbolTable::newSymbol(std::string name, ValueType type, Node* params){
   if(table.find(name) != table.end()){
     yyerror("semantic error: re-declaration of variable");
   }else{
@@ -11,7 +11,7 @@ IdentifierNode* SymbolTable::newSymbol(std::string name, ValueType type){
   return table[name];
 }
 
-IdentifierNode* SymbolTable::useSymbol(std::string name){
+IdentifierNode* SymbolTable::useSymbol(std::string name, Node* values){
   if(!previous && table.find(name) == table.end()){
     yyerror("semantic error: undeclared variable");
     return nullptr;

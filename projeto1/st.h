@@ -9,6 +9,6 @@ public:
   SymbolTable(SymbolTable* previous = nullptr) :
     previous(previous) {};
   std::map<std::string,IdentifierNode*> table;
-  IdentifierNode* newSymbol(std::string name, ValueType type);
-  IdentifierNode* useSymbol(std::string name);
+  IdentifierNode* newSymbol(std::string name, ValueType type, Node* params = nullptr);
+  IdentifierNode* useSymbol(std::string name, Node* values = nullptr);
 };

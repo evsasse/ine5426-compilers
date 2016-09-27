@@ -26,6 +26,8 @@ identifier [a-zA-Z][a-zA-Z_0-9]*
 "int"[ \t]    { return D_INT; }
 "float"[ \t]    { return D_FLOAT; }
 "bool"[ \t]    { return D_BOOL; }
+"fun"[ \t]    { return T_FUN; }
+"ret"[ \t]    { return T_RET; }
 
 "if"[ \t]     { return T_IF; }
 "then"[ \t]   { return T_THEN; }
@@ -56,7 +58,8 @@ identifier [a-zA-Z][a-zA-Z_0-9]*
 "!"           { return T_NOT; }
 \n            { return T_NEWLINE; }
 
-.            { lexical_error(yytext); }
+.            { lexical_error(yytext); /*['a-zA-Z0-9...]*/ }
+
 
 %%
 

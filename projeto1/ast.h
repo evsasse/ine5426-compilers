@@ -8,6 +8,7 @@ enum Operation { NEGATIVE, NOT, CINT, CFLOAT, CBOOL,
                  AND, OR, EQUAL, DIFFERENT, GREATER, GREATEROREQUAL,
                  LESS, LESSOREQUAL };
 enum ValueType { INT, FLOAT, BOOL };
+enum Kind { VARIABLE, FUNCTION };
 
 class Node {
 public:
@@ -26,6 +27,14 @@ public:
   void print();
 };
 
+class ValuesNode : public Node {
+public:
+  Node *value;
+  ValuesNode* next;
+  ValuesNode(Node *value) :
+    value(value) {};
+  void print();
+};
 class IntegerNode : public Node {
 public:
   int value;
@@ -77,7 +86,8 @@ public:
   IdentifierNode *identifier;
   DeclarationNode *next;
   Node *value;
-  DeclarationNode(IdentifierNode* identifier, Node* value = nullptr, DeclarationNode *next = nullptr);
+  Kind kind;
+  DeclarationNode(IdentifierNode* identifier, Node* value = nullptr, Kind kind = VARIABLE);
   void print();
 };
 class MainDeclarationNode : public Node {
@@ -85,6 +95,21 @@ public:
   DeclarationNode *first;
   MainDeclarationNode(DeclarationNode *first, ValueType type) :
     Node(type), first(first) {};
+  void print();
+};
+class FunctionDeclarationNode : public DeclarationNode {
+public:
+  Node *params;
+  FunctionDeclarationNode(IdentifierNode *identifier, Node* params, Node *value = nullptr, DeclarationNode *next = nullptr) :
+    DeclarationNode(identifier, value, FUNCTION), params(params) {};
+  void print();
+};
+
+class ParamNode : public IdentifierNode {
+public:
+  ParamNode *next;
+  ParamNode(IdentifierNode* idNode) :
+    IdentifierNode(idNode->name, idNode->type) {};
   void print();
 };
 

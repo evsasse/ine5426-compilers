@@ -5,11 +5,17 @@
 
 extern void yyerror(const char*);
 
-int BlockNode::tabs = 0;
+int BlockNode::tabs = -1;
 void BlockNode::print(){
   //std::cout << "[";
   tabs++;
   for(Node *line : *this){
+    if(MainDeclarationNode* mDN = dynamic_cast<MainDeclarationNode*>(line)){
+      if(!mDN->first->next && !mDN->first->value && dynamic_cast<FunctionDeclarationNode*>(mDN->first))
+        continue; // Ignores a line that contains only a declaration of a function;
+        // Checks if is a declaration line, if there is only one member,
+        // the member has no declared value, and the member is a function
+    }
     for(int i=0; i<tabs; i++)
       std::cout << "  ";
     line->print();
@@ -20,6 +26,18 @@ void BlockNode::print(){
   //std::cout << "]";
 }
 
+void ValuesNode::print(){
+  switch(value->type){
+    case INT: std::cout << "int"; break;
+    case FLOAT: std::cout << "float"; break;
+    case BOOL: std::cout << "bool"; break;
+  }
+  value->print();
+  if(next){
+    std::cout << ",";
+    next->print();
+  }
+}
 void IntegerNode::print(){
   //std::cout << "IntegerNode{";
   std::cout << " " << value;
@@ -159,8 +177,8 @@ void MainDeclarationNode::print(){
   first->print();
 }
 
-DeclarationNode::DeclarationNode(IdentifierNode* identifier, Node *value, DeclarationNode *next) :
-identifier(identifier), value(value), next(next) {
+DeclarationNode::DeclarationNode(IdentifierNode* identifier, Node *value, Kind kind) :
+identifier(identifier), value(value), kind(kind) {
   if(value && value->type == INT && identifier->type == FLOAT)
     this->value = new UnaryOperationNode(CFLOAT,value);
   else if(value && value->type != identifier->type)
@@ -174,6 +192,32 @@ void DeclarationNode::print(){
   }
   if(next){
     std::cout << ",";
+    next->print();
+  }
+}
+
+void FunctionDeclarationNode::print(){
+  if(!value){
+    if(next) next->print();
+    return;
+  }
+  std::cout << "fun:";
+  identifier->print();
+  std::cout << "(params: ";
+  if(params) params->print();
+  std::cout << ")" << std::endl;
+  value->print();
+}
+
+void ParamNode::print(){
+  switch (type) {
+    case INT: std::cout << "int "; break;
+    case FLOAT: std::cout << "float "; break;
+    case BOOL: std::cout << "bool "; break;
+  }
+  std::cout << name;
+  if(next){
+    std::cout << ", ";
     next->print();
   }
 }

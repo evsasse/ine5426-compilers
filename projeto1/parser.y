@@ -49,24 +49,40 @@
 %token D_INT
 %token D_FLOAT
 %token D_BOOL
+%token T_FUN T_RET
 
 %type <node> ifthenelse for for-init for-iter
 %type <node> line declaration decl-value
 %type <node> decl-ints decl-int
 %type <node> decl-floats decl-float
 %type <node> decl-bools decl-bool
-%type <node> attribution expr
+%type <node> attribution expr exprs
+%type <node> func-params func-body params param
 %type <block> block scoped-block else
 
 %%
 
 program : block { lines = *$1; }
 ;
-scoped-block : { currentSymbolTable = new SymbolTable(currentSymbolTable); } block { currentSymbolTable = currentSymbolTable->previous; $$ = $2; }
-;
 block   : { $$ = new BlockNode(); }
         | block line { $1->push_back($2); }
         | block T_NEWLINE
+;
+scoped-block : { currentSymbolTable = new SymbolTable(currentSymbolTable); } block { currentSymbolTable = currentSymbolTable->previous; $$ = $2; }
+;
+func-params : { currentSymbolTable = new SymbolTable(currentSymbolTable); }
+              T_POPEN params T_PCLOSE { $$ = $3; }
+;
+func-body   : { currentSymbolTable = currentSymbolTable->previous; $$ = nullptr; }
+            | T_CBOPEN block T_RET T_NEWLINE T_CBCLOSE { currentSymbolTable = currentSymbolTable->previous; $$ = $2; }
+;
+params  : param T_COMMA params { static_cast<ParamNode*>($1)->next = static_cast<ParamNode*>($3); }
+        | param
+        | { $$ = nullptr; }
+;
+param   : D_INT T_IDENTIFIER { $$ = new ParamNode(currentSymbolTable->newSymbol($2, INT)); }
+        | D_FLOAT T_IDENTIFIER { $$ = new ParamNode(currentSymbolTable->newSymbol($2, FLOAT)); }
+        | D_BOOL T_IDENTIFIER { $$ = new ParamNode(currentSymbolTable->newSymbol($2, BOOL)); }
 ;
 
 line    : declaration T_NEWLINE
@@ -88,6 +104,7 @@ decl-ints   : decl-int T_COMMA decl-ints { static_cast<DeclarationNode*>($1)->ne
 ;
 decl-int    : T_IDENTIFIER { $$ = new DeclarationNode(currentSymbolTable->newSymbol($1,INT)); }
             | T_IDENTIFIER T_ATTRIB decl-value { $$ = new DeclarationNode(currentSymbolTable->newSymbol($1,INT), $3); }
+            | T_FUN T_IDENTIFIER func-params func-body { $$ = new FunctionDeclarationNode(currentSymbolTable->newSymbol($2, INT, $3), $3, $4); }
 ;
 decl-floats : decl-float T_COMMA decl-floats { static_cast<DeclarationNode*>($1)->next = static_cast<DeclarationNode*>($3); }
             | decl-float
@@ -119,10 +136,16 @@ for-iter    : { $$ = nullptr; }
             | attribution
 ;
 
+exprs : expr T_COMMA exprs { ValuesNode* e = new ValuesNode($1); e->next = static_cast<ValuesNode*>($3); $$ = e; }
+      | expr { $$ = new ValuesNode($1); }
+      | { $$ = nullptr; }
+;
+
 expr  : V_INT { $$ = new IntegerNode($1); }
       | V_FLOAT { $$ = new FloatNode($1); }
       | V_BOOL { $$ = new BoolNode($1); }
       | T_IDENTIFIER { $$ = currentSymbolTable->useSymbol($1); }
+      | T_IDENTIFIER T_POPEN exprs T_PCLOSE { $$ = currentSymbolTable->useSymbol($1,$3); }
       | T_POPEN expr T_PCLOSE { $$ = $2; }
       | T_INT expr { $$ = new UnaryOperationNode(CINT, $2); }
       | T_FLOAT expr { $$ = new UnaryOperationNode(CFLOAT, $2); }
