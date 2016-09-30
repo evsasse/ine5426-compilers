@@ -138,8 +138,11 @@ Node(left->type), left(left), operation(operation), right(right) {
   else if(operation == AND || operation == OR){
     //logical operations
     Node::type = BOOL;
-    if(left->type != BOOL || right->type != BOOL){
-      yyerror("semantic error: logical operation expected bool but received");
+    if(left->type != BOOL){
+      yyerror(("semantic error: "+operationName(operation)+" operation expected boolean but received "+typeFullName(left->type)).c_str());
+    }
+    else if(right->type != BOOL){
+      yyerror(("semantic error: "+operationName(operation)+" operation expected boolean but received "+typeFullName(right->type)).c_str());
     }
   }
 };
@@ -170,11 +173,11 @@ UnaryOperationNode::UnaryOperationNode(Operation operation, Node *right) :
 Node(right->type), operation(operation), right(right){
   if(operation == NEGATIVE && type != INT && type != FLOAT){
     Node::type = INT;
-    yyerror("semantic error: negative operation expected integer or float but received bool");
+    yyerror("semantic error: unary minus operation expected integer or float but received boolean");
   }
   else if(operation == NOT && type != BOOL){
     Node::type = BOOL;
-    yyerror("semantic error: not operation expected bool but received");
+    yyerror(("semantic error: negation operation expected boolean but received "+typeFullName(right->type)).c_str());
   }
   else if(operation == CINT){
     Node::type = INT;
@@ -219,7 +222,7 @@ identifier(identifier), value(value), next(next) {
   if(value && value->type == INT && identifier->type == FLOAT)
     this->value = new UnaryOperationNode(CFLOAT,value);
   else if(value && value->type != identifier->type)
-    yyerror("semantic error: type expected at declaration different from received");
+    yyerror(("semantic error: declaration of "+identifier->name+" expected "+typeFullName(identifier->type)+" but received "+typeFullName(value->type)).c_str());
 };
 void DeclarationNode::print(){
   identifier->print();
@@ -285,7 +288,7 @@ void FunctionCallNode::print(){
 IfThenElseNode::IfThenElseNode(Node *_if, BlockNode *then, BlockNode *_else) :
 _if(_if), then(then), _else(_else) {
   if(_if->type != BOOL)
-    yyerror("semantic error: test operation expected boolean but received");
+    yyerror(("semantic error: test operation expected boolean but received "+typeFullName(_if->type)).c_str());
 }
 void IfThenElseNode::print(){
   std::cout << "if:";
@@ -307,7 +310,7 @@ void IfThenElseNode::print(){
 ForNode::ForNode(Node *init, Node *test, Node *iter, BlockNode *block) :
 init(init), test(test), iter(iter), block(block) {
   if(test->type != BOOL)
-    yyerror("semantic error: test operation expected boolean but received");
+    yyerror(("semantic error: test operation expected boolean but received "+typeFullName(test->type)).c_str());
 }
 void ForNode::print(){
   std::cout << "for: ";
