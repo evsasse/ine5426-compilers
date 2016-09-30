@@ -5,11 +5,14 @@
 
 extern void yyerror(const char*);
 
-int BlockNode::tabs = 0;
+int BlockNode::tabs = -1; //
 void BlockNode::print(){
   //std::cout << "[";
   tabs++;
   for(Node *line : *this){
+    if(FunctionDeclarationNode* func = dynamic_cast<FunctionDeclarationNode*>(line)){
+      if(!func->block) continue; // ignores lines of function declaration
+    }
     for(int i=0; i<tabs; i++)
       std::cout << "  ";
     line->print();
@@ -18,6 +21,11 @@ void BlockNode::print(){
   }
   tabs--;
   //std::cout << "]";
+}
+
+void ReturnNode::print(){
+  std::cout << "ret";
+  expr->print();
 }
 
 void IntegerNode::print(){
@@ -144,10 +152,11 @@ void UnaryOperationNode::print(){
 }
 
 void IdentifierNode::print(){
-  //std::cout << "IdentifierNode{";
   std::cout << " " << name;
-  //std::cout << name;
-  //std::cout << "}";
+  // if(params){
+  //   std::cout << "[" << params->size() << " params]";
+  //   params->print();
+  // }
 }
 
 void MainDeclarationNode::print(){
@@ -176,6 +185,55 @@ void DeclarationNode::print(){
     std::cout << ",";
     next->print();
   }
+}
+
+void ListNode::print(){
+  for(Node *node : *this){
+    node->print();
+  }
+}
+
+void ParamNode::print(){
+  switch(type){
+    case INT: std::cout << "int "; break;
+    case FLOAT: std::cout << "float "; break;
+    case BOOL: std::cout << "bool "; break;
+  }
+  std::cout << name;
+}
+
+void FunctionDeclarationNode::print(){
+  if(!block) return;
+  switch(identifier->type){
+    case INT: std::cout << "int "; break;
+    case FLOAT: std::cout << "float "; break;
+    case BOOL: std::cout << "bool "; break;
+  }
+  std::cout << "fun: ";
+  std::cout << identifier->name << " (params: ";
+  for(Node *node : *params){
+    switch(node->type){
+      case INT: std::cout << "int"; break;
+      case FLOAT: std::cout << "float"; break;
+      case BOOL: std::cout << "bool"; break;
+    }
+    node->print();
+    if(node != params->back())
+      std::cout << ", ";
+  }
+  std::cout << ")" << std::endl;
+  block->print();
+}
+
+FunctionCallNode::FunctionCallNode(IdentifierNode *identifier, ListNode *values) :
+identifier(identifier), values(values) {
+  type = identifier->type;
+  // TODO check values with identifier params
+};
+void FunctionCallNode::print(){
+  identifier->print();
+  std::cout << "[" << values->size() << " params]";
+  values->print();
 }
 
 IfThenElseNode::IfThenElseNode(Node *_if, BlockNode *then, BlockNode *_else) :

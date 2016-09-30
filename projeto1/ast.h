@@ -19,10 +19,23 @@ protected:
     type(type) {};
 };
 
+class ListNode : public std::list<Node*>, public Node{
+public:
+  void print();
+};
+
 class BlockNode : public std::list<Node*>, public Node {
 public:
   static int tabs;
   BlockNode() {};
+  void print();
+};
+
+class ReturnNode : public Node {
+public:
+  Node *expr;
+  ReturnNode(Node *expr) :
+    expr(expr) {};
   void print();
 };
 
@@ -67,8 +80,10 @@ public:
 class IdentifierNode : public Node {
 public:
   std::string name;
-  IdentifierNode(std::string name, ValueType type) :
-    Node(type), name(name) {};
+  ListNode *params;
+  Node *value;
+  IdentifierNode(std::string name, ValueType type, Node* value = nullptr, ListNode *params = nullptr) :
+    Node(type), name(name), value(value), params(params) {};
   void print();
 };
 
@@ -85,6 +100,29 @@ public:
   DeclarationNode *first;
   MainDeclarationNode(DeclarationNode *first, ValueType type) :
     Node(type), first(first) {};
+  void print();
+};
+
+class ParamNode : public IdentifierNode{
+public:
+  ParamNode(std::string name, ValueType type):
+    IdentifierNode(name, type) {};
+  void print();
+};
+class FunctionDeclarationNode : public Node {
+public:
+  IdentifierNode* identifier;
+  ListNode* params;
+  BlockNode* block;
+  FunctionDeclarationNode(IdentifierNode* identifier, ListNode* params, BlockNode* block) :
+    identifier(identifier), params(params), block(block) {};
+  void print();
+};
+class FunctionCallNode : public Node {
+public:
+  IdentifierNode *identifier;
+  ListNode *values;
+  FunctionCallNode(IdentifierNode *identifier, ListNode *values);
   void print();
 };
 
