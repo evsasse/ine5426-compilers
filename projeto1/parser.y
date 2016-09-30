@@ -10,7 +10,7 @@
   SymbolTable *currentSymbolTable;
 %}
 
-%define parse.error verbose
+//%define parse.error verbose
 
 %union {
   int val_int;
@@ -73,6 +73,7 @@ scoped-block : { currentSymbolTable = new SymbolTable(currentSymbolTable); } blo
 ;
 block   : %empty { $$ = new BlockNode(); }
         | block line { $1->push_back($2); }
+        | block error T_NEWLINE { yyerrok; }
         | block T_NEWLINE
 ;
 
