@@ -27,6 +27,9 @@ identifier [a-zA-Z][a-zA-Z_0-9]*
 "float"[ \t]    { return D_FLOAT; }
 "bool"[ \t]    { return D_BOOL; }
 
+"fun"[ \t]    { return D_FUN; }
+"ret"[ \t]    { return T_RET; }
+
 "if"[ \t]     { return T_IF; }
 "then"[ \t]   { return T_THEN; }
 "else"[ \t]   { return T_ELSE; }

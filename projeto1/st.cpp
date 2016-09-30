@@ -2,11 +2,18 @@
 
 extern void yyerror(const char*);
 
-IdentifierNode* SymbolTable::newSymbol(std::string name, ValueType type){
+IdentifierNode* SymbolTable::newSymbol(std::string name, ValueType type, Node* value, ListNode *params){
   if(table.find(name) != table.end()){
-    yyerror("semantic error: re-declaration of variable");
+    if(table[name]->params){ // function
+      if(!table[name]->value && value){ // undefined function
+        table[name]->value = value;
+        table[name]->params = params;
+      }else{
+        yyerror("semantic error: re-declaration of function");
+      }
+    }else yyerror("semantic error: re-declaration of variable");
   }else{
-    table[name] = new IdentifierNode(name,type);
+    table[name] = new IdentifierNode(name,type,value,params);
   }
   return table[name];
 }
@@ -20,4 +27,14 @@ IdentifierNode* SymbolTable::useSymbol(std::string name){
   }else{
     return table[name];
   }
+}
+
+SymbolTable* SymbolTable::endScope(){
+  for(auto pair : table){
+    IdentifierNode* node = pair.second;
+    if(node->params && !node->value){ // undefined function
+      yyerror(("semantic error: function "+node->name+" is declared but never defined").c_str());
+    }
+  }
+  return previous;
 }
