@@ -5,6 +5,40 @@
 
 extern void yyerror(const char*);
 
+std::string operationName(Operation op){
+  switch(op){
+    case ATTRIB: return "attribution"; break;
+    case PLUS: return "addition"; break;
+    case MINUS: return "subtraction"; break;
+    case TIMES: return "multiplication"; break;
+    case DIVIDE: return "division"; break;
+    case NEGATIVE: return "unary minus"; break;
+    case EQUAL: return "equal"; break;
+    case DIFFERENT: return "different"; break;
+    case GREATER: return "greater than"; break;
+    case LESS: return "less than"; break;
+    case GREATEROREQUAL: return "greater or equal than"; break;
+    case LESSOREQUAL: return "less or equal than"; break;
+    case AND: return "and"; break;
+    case OR: return "or"; break;
+    case NOT: return "negation"; break;
+  }
+};
+std::string typeFullName(ValueType type){
+  switch(type){
+    case INT: return "integer"; break;
+    case FLOAT: return "float"; break;
+    case BOOL: return "boolean"; break;
+  }
+};
+std::string typeName(ValueType type){
+  switch(type){
+    case INT: return "int"; break;
+    case FLOAT: return "float"; break;
+    case BOOL: return "bool"; break;
+  }
+};
+
 int BlockNode::tabs = -1; //
 void BlockNode::print(){
   //std::cout << "[";
@@ -55,15 +89,21 @@ Node(left->type), left(left), operation(operation), right(right) {
     else if(left->type == INT && right->type == FLOAT){
       this->left = new UnaryOperationNode(CFLOAT,left);
     }
-    else if((left->type != INT && left->type != FLOAT)||((right->type != INT && right->type != FLOAT))){
-      yyerror("semantic error: relational operation expected int or float but received");
+    else if(left->type != INT && left->type != FLOAT && right->type != INT && right->type != FLOAT){
+      yyerror(("semantic error: "+operationName(operation)+" operation expected integer or float but received "+typeFullName(left->type)+" and "+typeFullName(right->type)).c_str());
+    }
+    else if(left->type != INT && left->type != FLOAT){
+      yyerror(("semantic error: "+operationName(operation)+" operation expected "+typeFullName(right->type)+" but received "+typeFullName(left->type)).c_str());
+    }
+    else if(right->type != INT && right->type != FLOAT){
+      yyerror(("semantic error: "+operationName(operation)+" operation expected "+typeFullName(left->type)+" but received "+typeFullName(right->type)).c_str());
     }
   }
   else if(operation == EQUAL || operation == DIFFERENT){
     //comparison operation
     Node::type = BOOL;
-    if(left->type != right->type){
-      yyerror("semantic error: comparison operation expected but received");
+    if(left->type != right->type && !(left->type == INT && right->type == FLOAT) && !(left->type == FLOAT && right->type == INT)){
+      yyerror(("semantic error: "+operationName(operation)+" operation expected "+typeFullName(left->type)+" but received "+typeFullName(right->type)).c_str());
     }
   }
   else if(operation == PLUS || operation == MINUS || operation == TIMES || operation == DIVIDE){
@@ -75,8 +115,14 @@ Node(left->type), left(left), operation(operation), right(right) {
       Node::type = FLOAT;
       this->left = new UnaryOperationNode(CFLOAT,left);
     }
-    else if((left->type != INT && left->type != FLOAT)||((right->type != INT && right->type != FLOAT))){
-      yyerror("semantic error: math operation expected int or float but received");
+    else if(left->type != INT && left->type != FLOAT && right->type != INT && right->type != FLOAT){
+      yyerror(("semantic error: "+operationName(operation)+" operation expected integer or float but received "+typeFullName(left->type)+" and "+typeFullName(right->type)).c_str());
+    }
+    else if(left->type != INT && left->type != FLOAT){
+      yyerror(("semantic error: "+operationName(operation)+" operation expected "+typeFullName(right->type)+" but received "+typeFullName(left->type)).c_str());
+    }
+    else if(right->type != INT && right->type != FLOAT){
+      yyerror(("semantic error: "+operationName(operation)+" operation expected "+typeFullName(left->type)+" but received "+typeFullName(right->type)).c_str());
     }
   }
   else if(operation == ATTRIB){
@@ -86,7 +132,7 @@ Node(left->type), left(left), operation(operation), right(right) {
       return;
     }
     else if(left->type != right->type){
-      yyerror("semantic error: attribution operation expected but received");
+      yyerror(("semantic error: attribution operation expected "+typeFullName(left->type)+" but received "+typeFullName(right->type)).c_str());
     }
   }
   else if(operation == AND || operation == OR){

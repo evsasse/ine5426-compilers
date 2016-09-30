@@ -7,7 +7,7 @@
   void yyerror(const char*);
 %}
 
-%option noyywrap
+%option noyywrap yylineno
 
 integer [0-9]+
 float ([0-9]+"."[0-9]*)|([0-9]*"."[0-9]+)

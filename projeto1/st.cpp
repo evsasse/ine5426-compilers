@@ -11,7 +11,7 @@ IdentifierNode* SymbolTable::newSymbol(std::string name, ValueType type, Node* v
       }else{
         yyerror("semantic error: re-declaration of function");
       }
-    }else yyerror("semantic error: re-declaration of variable");
+    }else yyerror(("semantic error: re-declaration of variable "+name).c_str());
   }else{
     table[name] = new IdentifierNode(name,type,value,params);
   }
@@ -20,8 +20,8 @@ IdentifierNode* SymbolTable::newSymbol(std::string name, ValueType type, Node* v
 
 IdentifierNode* SymbolTable::useSymbol(std::string name){
   if(!previous && table.find(name) == table.end()){
-    yyerror("semantic error: undeclared variable");
-    return nullptr;
+    yyerror(("semantic error: undeclared variable "+name).c_str());
+    return new IdentifierNode(name, INT);
   } else if(table.find(name) == table.end()){
     return previous->useSymbol(name);
   }else{
