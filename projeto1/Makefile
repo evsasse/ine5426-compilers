@@ -10,7 +10,7 @@ scanner.cpp: parser.h scanner.l
 	flex -o scanner.cpp scanner.l
 
 clear:
-	rm lukacompiler parser.cpp parser.h scanner.cpp test parser.output
+	rm lukacompiler parser.cpp parser.h scanner.cpp test errortest parser.output
 
 test:
 	echo "v0.1/1" > test
@@ -45,3 +45,17 @@ test:
 	-./lukacompiler < tests/v0.7/input/1.in | diff -B - tests/v0.7/expected/1.ex >> test
 	echo "v0.7/2" >> test
 	-./lukacompiler < tests/v0.7/input/2.in | diff -B - tests/v0.7/expected/2.ex >> test
+
+errortest:
+	echo "v0.1/1" > errortest
+	-./lukacompiler < error_tests/v0.1/input/1.in >error_tests/errortest 2>error_tests/errortest_err
+	-diff -B error_tests/errortest error_tests/v0.1/expected/1.ex >> errortest
+	echo "v0.1/1_err" >> errortest
+	-diff -B error_tests/errortest_err error_tests/v0.1/expected/1.ex_err >> errortest
+	rm error_tests/errortest error_tests/errortest_err
+	echo "v0.1/2" >> errortest
+	-./lukacompiler < error_tests/v0.1/input/2.in >error_tests/errortest 2>error_tests/errortest_err
+	-diff -B error_tests/errortest error_tests/v0.1/expected/2.ex >> errortest
+	echo "v0.1/2_err" >> errortest
+	-diff -B error_tests/errortest_err error_tests/v0.1/expected/2.ex_err >> errortest
+	rm error_tests/errortest error_tests/errortest_err
