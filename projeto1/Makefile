@@ -4,13 +4,13 @@ $(OUTPUT): parser.h parser.cpp scanner.cpp main.cpp
 	g++ -o $(OUTPUT) *.cpp -std=c++11
 
 parser.h: parser.y
-	bison --defines=parser.h -o parser.cpp parser.y
+	bison -v --defines=parser.h -o parser.cpp parser.y
 
 scanner.cpp: parser.h scanner.l
 	flex -o scanner.cpp scanner.l
 
 clear:
-	rm lukacompiler parser.cpp parser.h scanner.cpp test
+	rm lukacompiler parser.cpp parser.h scanner.cpp test parser.output
 
 test:
 	echo "v0.1/1" > test
@@ -41,3 +41,7 @@ test:
 	-./lukacompiler < tests/v0.6/input/1.in | diff -B - tests/v0.6/expected/1.ex >> test
 	echo "v0.6/2" >> test
 	-./lukacompiler < tests/v0.6/input/2.in | diff -B - tests/v0.6/expected/2.ex >> test
+	echo "v0.7/1" >> test
+	-./lukacompiler < tests/v0.7/input/1.in | diff -B - tests/v0.7/expected/1.ex >> test
+	echo "v0.7/2" >> test
+	-./lukacompiler < tests/v0.7/input/2.in | diff -B - tests/v0.7/expected/2.ex >> test
