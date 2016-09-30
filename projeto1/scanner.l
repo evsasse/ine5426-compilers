@@ -59,7 +59,7 @@ identifier [a-zA-Z][a-zA-Z_0-9]*
 "!"           { return T_NOT; }
 \n            { return T_NEWLINE; }
 
-.            { lexical_error(yytext); }
+[^a-zA-Z0-9\. \t\{\}\[\]\+\-\*\/\(\)\=\,\!\>\<\&\|\n]+ { lexical_error(yytext); }
 
 %%
 
@@ -69,5 +69,5 @@ void lexical_error(const char *s){
 }
 
 void yyerror(const char *s){
-  std::cerr << "[Line " << yylineno << "]" << s << std::endl;
+  std::cerr << "[Line " << yylineno << "] " << s << std::endl;
 }
