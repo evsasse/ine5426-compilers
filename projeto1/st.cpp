@@ -4,12 +4,12 @@ extern void yyerror(const char*);
 
 IdentifierNode* SymbolTable::newSymbol(std::string name, ValueType type, Node* value, ListNode *params){
   if(table.find(name) != table.end()){
-    if(table[name]->params){ // function
+    if(table[name]->params){ // existing function
       if(!table[name]->value && value){ // undefined function
         table[name]->value = value;
         table[name]->params = params;
       }else{
-        yyerror("semantic error: re-declaration of function");
+        yyerror(("semantic error: re-definition of function "+name).c_str());
       }
     }else yyerror(("semantic error: re-declaration of variable "+name).c_str());
   }else{
