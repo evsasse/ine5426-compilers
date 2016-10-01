@@ -5,7 +5,15 @@ extern void yyerror(const char*);
 IdentifierNode* SymbolTable::newSymbol(std::string name, ValueType type, Node* value, ListNode *params){
   if(table.find(name) != table.end()){
     if(table[name]->params){ // existing function
-      if(!table[name]->value && value){ // undefined function
+      bool paramsAgree = table[name]->params->size() == params->size();
+      if(paramsAgree){
+        auto currentParam = table[name]->params->begin();
+        auto newParam = params->begin();
+        for(; newParam != params->end() && paramsAgree; currentParam++, newParam++)
+          if(static_cast<IdentifierNode*>(*currentParam)->name != static_cast<IdentifierNode*>(*newParam)->name || (*currentParam)->type != (*newParam)->type)
+            paramsAgree = !paramsAgree;
+      }
+      if(!table[name]->value && value && paramsAgree){ // undefined function
         table[name]->value = value;
         table[name]->params = params;
       }else{
