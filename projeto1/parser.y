@@ -57,11 +57,12 @@
 
 %type <node> ifthenelse for for-init for-iter
 %type <node> line declaration decl-value
-%type <node> decl-ints decl-int decl-func-int
+%type <node> decl-ints decl-int decl-func-int decl-arr-int
 %type <node> decl-floats decl-float decl-func-float
 %type <node> decl-bools decl-bool decl-func-bool
 %type <node> attribution expr
 %type <values> exprs func-params params
+%type <values> decl-arr-ints
 %type <node> param
 %type <block> block scoped-block else func-def
 
@@ -95,12 +96,18 @@ decl-value  : V_INT { $$ = new IntegerNode($1); }
 decl-func-int : D_FUN T_IDENTIFIER T_POPEN { currentSymbolTable = new SymbolTable(currentSymbolTable); }
                 func-params T_PCLOSE func-def { currentSymbolTable = currentSymbolTable->endScope(); $$ = new FunctionDeclarationNode(currentSymbolTable->newSymbol($2,INT,$7,$5),$5,$7); }
               | decl-ints { $$ = new MainDeclarationNode(static_cast<DeclarationNode*>($1), INT); }
+              | decl-arr-ints { $$ = new ArrayDeclarationNode($1,INT); }
 ;
 decl-ints   : decl-int T_COMMA decl-ints { static_cast<DeclarationNode*>($1)->next = static_cast<DeclarationNode*>($3); }
             | decl-int
 ;
 decl-int    : T_IDENTIFIER { $$ = new DeclarationNode(currentSymbolTable->newSymbol($1,INT)); }
             | T_IDENTIFIER T_ATTRIB decl-value { $$ = new DeclarationNode(currentSymbolTable->newSymbol($1,INT), $3); }
+;
+decl-arr-ints : decl-arr-int { $$ = new ListNode(); $$->push_back($1); }
+              | decl-arr-ints T_COMMA decl-arr-int { $1->push_back($3); }
+;
+decl-arr-int  : T_IDENTIFIER T_POPEN V_INT T_PCLOSE { $$ = currentSymbolTable->newSymbol($1,INT,new IntegerNode($3)); }
 ;
 
 decl-func-float : D_FUN T_IDENTIFIER T_POPEN { currentSymbolTable = new SymbolTable(currentSymbolTable); }

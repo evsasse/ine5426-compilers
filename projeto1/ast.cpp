@@ -299,6 +299,17 @@ void FunctionCallNode::print(){
   values->print();
 }
 
+void ArrayDeclarationNode::print(){
+  std::cout << typeName(type) << " array: ";
+  for(Node *node : *decls){
+    std::cout << static_cast<IdentifierNode*>(node)->name << " (size:";
+    static_cast<IdentifierNode*>(node)->value->print();
+    std::cout << ")";
+    if(node != decls->back())
+      std::cout << ", ";
+  }
+}
+
 IfThenElseNode::IfThenElseNode(Node *_if, BlockNode *then, BlockNode *_else) :
 _if(_if), then(then), _else(_else) {
   if(_if->type != BOOL)

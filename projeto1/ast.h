@@ -130,6 +130,14 @@ public:
   void print();
 };
 
+class ArrayDeclarationNode : public Node {
+public:
+  ListNode *decls;
+  ArrayDeclarationNode(ListNode *decls, ValueType type) :
+    decls(decls), Node(type) {};
+  void print();
+};
+
 class IfThenElseNode : public Node {
 public:
   Node* _if;
