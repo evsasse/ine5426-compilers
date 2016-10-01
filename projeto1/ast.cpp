@@ -277,7 +277,21 @@ void FunctionDeclarationNode::print(){
 FunctionCallNode::FunctionCallNode(IdentifierNode *identifier, ListNode *values) :
 identifier(identifier), values(values) {
   type = identifier->type;
-  // TODO check values with identifier params
+  if(identifier->params->size() != values->size()){
+    yyerror(("semantic error: function "+identifier->name+" expects "+std::to_string(identifier->params->size())+" parameters but received "+std::to_string(values->size())).c_str());
+  }
+  //yyerror(("semantic tip: function "+identifier->name+" expects "+std::to_string(identifier->params->size())+" parameters and received "+std::to_string(values->size())).c_str());
+
+  auto i = identifier->params->begin();
+  auto v = values->begin();
+  // for(Node* i : (*identifier->params))
+  //   yyerror(("semantic tip: "+typeFullName(i->type)).c_str());
+  for(;i != identifier->params->end() && v != values->end(); ++i, ++v){
+    if((*i)->type != (*v)->type)
+      yyerror(("semantic error: parameter "+static_cast<IdentifierNode*>(*i)->name+" expected "+typeFullName((*i)->type)+" but received "+typeFullName((*v)->type)).c_str());
+    // else
+    //   yyerror(("semantic tip: parameter "+static_cast<IdentifierNode*>(*i)->name+" expected "+typeFullName((*i)->type)+" and received "+typeFullName((*v)->type)).c_str());
+  }
 };
 void FunctionCallNode::print(){
   identifier->print();
