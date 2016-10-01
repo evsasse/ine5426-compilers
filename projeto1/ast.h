@@ -9,6 +9,10 @@ enum Operation { NEGATIVE, NOT, CINT, CFLOAT, CBOOL,
                  LESS, LESSOREQUAL };
 enum ValueType { INT, FLOAT, BOOL };
 
+std::string operationName(Operation op);
+std::string typeFullName(ValueType type);
+std::string typeName(ValueType type);
+
 class Node {
 public:
   ValueType type;
