@@ -29,6 +29,8 @@ identifier [a-zA-Z][a-zA-Z_0-9]*
 
 "fun"[ \t]    { return D_FUN; }
 "ret"[ \t]    { return T_RET; }
+"ref"[ \t]    { return T_REF; }
+"addr"[ \t]    { return T_ADDR; }
 
 "if"[ \t]     { return T_IF; }
 "then"[ \t]   { return T_THEN; }
