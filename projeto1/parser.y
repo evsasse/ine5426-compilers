@@ -57,11 +57,12 @@
 
 %type <node> ifthenelse for for-init for-iter
 %type <node> line declaration decl-value
-%type <node> decl-ints decl-int decl-func-int
-%type <node> decl-floats decl-float decl-func-float
-%type <node> decl-bools decl-bool decl-func-bool
+%type <node> decl-ints decl-int decl-func-int decl-arr-int
+%type <node> decl-floats decl-float decl-func-float decl-arr-float
+%type <node> decl-bools decl-bool decl-func-bool decl-arr-bool
 %type <node> attribution expr
 %type <values> exprs func-params params
+%type <values> decl-arr-ints decl-arr-floats decl-arr-bools
 %type <node> param
 %type <block> block scoped-block else func-def
 
@@ -95,6 +96,7 @@ decl-value  : V_INT { $$ = new IntegerNode($1); }
 decl-func-int : D_FUN T_IDENTIFIER T_POPEN { currentSymbolTable = new SymbolTable(currentSymbolTable); }
                 func-params T_PCLOSE func-def { currentSymbolTable = currentSymbolTable->endScope(); $$ = new FunctionDeclarationNode(currentSymbolTable->newSymbol($2,INT,$7,$5),$5,$7); }
               | decl-ints { $$ = new MainDeclarationNode(static_cast<DeclarationNode*>($1), INT); }
+              | decl-arr-ints { $$ = new ArrayDeclarationNode($1,INT); }
 ;
 decl-ints   : decl-int T_COMMA decl-ints { static_cast<DeclarationNode*>($1)->next = static_cast<DeclarationNode*>($3); }
             | decl-int
@@ -102,10 +104,16 @@ decl-ints   : decl-int T_COMMA decl-ints { static_cast<DeclarationNode*>($1)->ne
 decl-int    : T_IDENTIFIER { $$ = new DeclarationNode(currentSymbolTable->newSymbol($1,INT)); }
             | T_IDENTIFIER T_ATTRIB decl-value { $$ = new DeclarationNode(currentSymbolTable->newSymbol($1,INT), $3); }
 ;
+decl-arr-ints : decl-arr-int { $$ = new ListNode(); $$->push_back($1); }
+              | decl-arr-ints T_COMMA decl-arr-int { $1->push_back($3); }
+;
+decl-arr-int  : T_IDENTIFIER T_POPEN V_INT T_PCLOSE { $$ = currentSymbolTable->newSymbol($1,INT,new IntegerNode($3)); }
+;
 
 decl-func-float : D_FUN T_IDENTIFIER T_POPEN { currentSymbolTable = new SymbolTable(currentSymbolTable); }
                   func-params T_PCLOSE func-def { currentSymbolTable = currentSymbolTable->endScope(); $$ = new FunctionDeclarationNode(currentSymbolTable->newSymbol($2,FLOAT,$7,$5),$5,$7); }
                 | decl-floats { $$ = new MainDeclarationNode(static_cast<DeclarationNode*>($1), FLOAT); }
+                | decl-arr-floats { $$ = new ArrayDeclarationNode($1,FLOAT); }
 ;
 decl-floats : decl-float T_COMMA decl-floats { static_cast<DeclarationNode*>($1)->next = static_cast<DeclarationNode*>($3); }
             | decl-float
@@ -113,16 +121,27 @@ decl-floats : decl-float T_COMMA decl-floats { static_cast<DeclarationNode*>($1)
 decl-float  : T_IDENTIFIER { $$ = new DeclarationNode(currentSymbolTable->newSymbol($1,FLOAT)); }
             | T_IDENTIFIER T_ATTRIB decl-value { $$ = new DeclarationNode(currentSymbolTable->newSymbol($1,FLOAT), $3); }
 ;
+decl-arr-floats : decl-arr-float { $$ = new ListNode(); $$->push_back($1); }
+                | decl-arr-floats T_COMMA decl-arr-float { $1->push_back($3); }
+;
+decl-arr-float  : T_IDENTIFIER T_POPEN V_INT T_PCLOSE { $$ = currentSymbolTable->newSymbol($1,FLOAT,new IntegerNode($3)); }
+;
 
 decl-func-bool: D_FUN T_IDENTIFIER T_POPEN { currentSymbolTable = new SymbolTable(currentSymbolTable); }
                 func-params T_PCLOSE func-def { currentSymbolTable = currentSymbolTable->endScope(); $$ = new FunctionDeclarationNode(currentSymbolTable->newSymbol($2,BOOL,$7,$5),$5,$7); }
               | decl-bools { $$ = new MainDeclarationNode(static_cast<DeclarationNode*>($1), BOOL); }
+              | decl-arr-bools { $$ = new ArrayDeclarationNode($1,BOOL); }
 ;
 decl-bools  : decl-bool T_COMMA decl-bools { static_cast<DeclarationNode*>($1)->next = static_cast<DeclarationNode*>($3); }
             | decl-bool
 ;
 decl-bool   : T_IDENTIFIER { $$ = new DeclarationNode(currentSymbolTable->newSymbol($1,BOOL)); }
             | T_IDENTIFIER T_ATTRIB decl-value { $$ = new DeclarationNode(currentSymbolTable->newSymbol($1,BOOL), $3); }
+;
+decl-arr-bools : decl-arr-bool { $$ = new ListNode(); $$->push_back($1); }
+               | decl-arr-bools T_COMMA decl-arr-bool { $1->push_back($3); }
+;
+decl-arr-bool  : T_IDENTIFIER T_POPEN V_INT T_PCLOSE { $$ = currentSymbolTable->newSymbol($1,BOOL,new IntegerNode($3)); }
 ;
 
 // get the parameters without allowing unecessary commas
@@ -141,6 +160,7 @@ func-def    : %empty { $$ = nullptr; }
 ;
 
 attribution : T_IDENTIFIER T_ATTRIB expr { $$ = new BinaryOperationNode(currentSymbolTable->useSymbol($1), ATTRIB, $3); }
+            | T_IDENTIFIER T_POPEN expr T_PCLOSE T_ATTRIB expr { $$ = new BinaryOperationNode(new ArrayUseNode(currentSymbolTable->useSymbol($1),$3),ATTRIB,$6); }
 ;
 
 ifthenelse  : T_IF expr T_NEWLINE T_THEN T_CBOPEN T_NEWLINE scoped-block T_CBCLOSE else { $$ = new IfThenElseNode($2, $7, $9); }
@@ -165,7 +185,7 @@ expr  : V_INT { $$ = new IntegerNode($1); }
       | V_BOOL { $$ = new BoolNode($1); }
       | T_IDENTIFIER { $$ = currentSymbolTable->useSymbol($1); }
       | T_IDENTIFIER T_POPEN T_PCLOSE { $$ = new FunctionCallNode(currentSymbolTable->useSymbol($1), new ListNode()); }
-      | T_IDENTIFIER T_POPEN exprs T_PCLOSE { $$ = new FunctionCallNode(currentSymbolTable->useSymbol($1),$3); }
+      | T_IDENTIFIER T_POPEN exprs T_PCLOSE { auto id = currentSymbolTable->useSymbol($1); $$ = (!id->params && $3->size() == 1)? static_cast<Node*>(new ArrayUseNode(id,*($3->begin()))) : static_cast<Node*>(new FunctionCallNode(id,$3)); }
       | T_POPEN expr T_PCLOSE { $$ = $2; }
       | T_INT expr { $$ = new UnaryOperationNode(CINT, $2); }
       | T_FLOAT expr { $$ = new UnaryOperationNode(CFLOAT, $2); }

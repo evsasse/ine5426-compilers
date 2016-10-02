@@ -299,6 +299,30 @@ void FunctionCallNode::print(){
   values->print();
 }
 
+void ArrayDeclarationNode::print(){
+  std::cout << typeName(type) << " array: ";
+  for(Node *node : *decls){
+    std::cout << static_cast<IdentifierNode*>(node)->name << " (size:";
+    static_cast<IdentifierNode*>(node)->value->print();
+    std::cout << ")";
+    if(node != decls->back())
+      std::cout << ", ";
+  }
+}
+
+ArrayUseNode::ArrayUseNode(IdentifierNode *identifier, Node *pos) :
+identifier(identifier), pos(pos) {
+  type = identifier->type;
+  if(pos->type != INT){
+    yyerror(("semantic error: index operator expects integer but received "+typeFullName(pos->type)).c_str());
+  }
+}
+void ArrayUseNode::print(){
+  std::cout << " [index]";
+  identifier->print();
+  pos->print();
+}
+
 IfThenElseNode::IfThenElseNode(Node *_if, BlockNode *then, BlockNode *_else) :
 _if(_if), then(then), _else(_else) {
   if(_if->type != BOOL)
