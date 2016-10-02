@@ -42,6 +42,7 @@
 %left T_INT T_FLOAT T_BOOL
 %left T_PLUS T_MINUS
 %left T_TIMES T_DIVIDE
+%left T_REF T_ADDR
 %nonassoc T_UNARYMINUS
 
 // V_ for values
@@ -57,14 +58,15 @@
 
 %type <node> ifthenelse for for-init for-iter
 %type <node> line declaration decl-value
-%type <node> decl-ints decl-int decl-func-int decl-arr-int
-%type <node> decl-floats decl-float decl-func-float decl-arr-float
-%type <node> decl-bools decl-bool decl-func-bool decl-arr-bool
+%type <node> decl-ints decl-int decl-int-opts decl-arr-int
+%type <node> decl-floats decl-float decl-float-opts decl-arr-float
+%type <node> decl-bools decl-bool decl-bool-opts decl-arr-bool
 %type <node> attribution expr
 %type <values> exprs func-params params
 %type <values> decl-arr-ints decl-arr-floats decl-arr-bools
 %type <node> param
 %type <block> block scoped-block else func-def
+%type <val_int> refs
 
 %%
 
@@ -84,19 +86,25 @@ line    : declaration T_NEWLINE
         | for T_NEWLINE
 ;
 
-declaration : D_INT decl-func-int { $$ = $2; }
-            | D_FLOAT decl-func-float { $$ = $2; }
-            | D_BOOL decl-func-bool { $$ = $2; }
+declaration : D_INT decl-int-opts { $$ = $2; }
+            | D_FLOAT decl-float-opts { $$ = $2; }
+            | D_BOOL decl-bool-opts { $$ = $2; }
 ;
 decl-value  : V_INT { $$ = new IntegerNode($1); }
             | V_FLOAT { $$ = new FloatNode($1); }
             | V_BOOL { $$ = new BoolNode($1); }
 ;
 
-decl-func-int : D_FUN T_IDENTIFIER T_POPEN { currentSymbolTable = new SymbolTable(currentSymbolTable); }
+refs    : T_REF { $$ = 1; }
+        | refs T_REF { $$ = $1 + 1; }
+;
+
+decl-int-opts : D_FUN T_IDENTIFIER T_POPEN { currentSymbolTable = new SymbolTable(currentSymbolTable); }
                 func-params T_PCLOSE func-def { currentSymbolTable = currentSymbolTable->endScope(); $$ = new FunctionDeclarationNode(currentSymbolTable->newSymbol($2,INT,$7,$5),$5,$7); }
               | decl-ints { $$ = new MainDeclarationNode(static_cast<DeclarationNode*>($1), INT); }
               | decl-arr-ints { $$ = new ArrayDeclarationNode($1,INT); }
+              | refs decl-arr-ints { for(Node *node : *$2){ static_cast<IdentifierNode*>(node)->refs = $1; }; $$ = new ArrayDeclarationNode($2,INT); }
+              | refs decl-ints { $$ = new MainDeclarationNode(static_cast<DeclarationNode*>($2), INT, $1); }
 ;
 decl-ints   : decl-int T_COMMA decl-ints { static_cast<DeclarationNode*>($1)->next = static_cast<DeclarationNode*>($3); }
             | decl-int
@@ -110,7 +118,7 @@ decl-arr-ints : decl-arr-int { $$ = new ListNode(); $$->push_back($1); }
 decl-arr-int  : T_IDENTIFIER T_POPEN V_INT T_PCLOSE { $$ = currentSymbolTable->newSymbol($1,INT,new IntegerNode($3)); }
 ;
 
-decl-func-float : D_FUN T_IDENTIFIER T_POPEN { currentSymbolTable = new SymbolTable(currentSymbolTable); }
+decl-float-opts : D_FUN T_IDENTIFIER T_POPEN { currentSymbolTable = new SymbolTable(currentSymbolTable); }
                   func-params T_PCLOSE func-def { currentSymbolTable = currentSymbolTable->endScope(); $$ = new FunctionDeclarationNode(currentSymbolTable->newSymbol($2,FLOAT,$7,$5),$5,$7); }
                 | decl-floats { $$ = new MainDeclarationNode(static_cast<DeclarationNode*>($1), FLOAT); }
                 | decl-arr-floats { $$ = new ArrayDeclarationNode($1,FLOAT); }
@@ -127,7 +135,7 @@ decl-arr-floats : decl-arr-float { $$ = new ListNode(); $$->push_back($1); }
 decl-arr-float  : T_IDENTIFIER T_POPEN V_INT T_PCLOSE { $$ = currentSymbolTable->newSymbol($1,FLOAT,new IntegerNode($3)); }
 ;
 
-decl-func-bool: D_FUN T_IDENTIFIER T_POPEN { currentSymbolTable = new SymbolTable(currentSymbolTable); }
+decl-bool-opts: D_FUN T_IDENTIFIER T_POPEN { currentSymbolTable = new SymbolTable(currentSymbolTable); }
                 func-params T_PCLOSE func-def { currentSymbolTable = currentSymbolTable->endScope(); $$ = new FunctionDeclarationNode(currentSymbolTable->newSymbol($2,BOOL,$7,$5),$5,$7); }
               | decl-bools { $$ = new MainDeclarationNode(static_cast<DeclarationNode*>($1), BOOL); }
               | decl-arr-bools { $$ = new ArrayDeclarationNode($1,BOOL); }
@@ -161,6 +169,8 @@ func-def    : %empty { $$ = nullptr; }
 
 attribution : T_IDENTIFIER T_ATTRIB expr { $$ = new BinaryOperationNode(currentSymbolTable->useSymbol($1), ATTRIB, $3); }
             | T_IDENTIFIER T_POPEN expr T_PCLOSE T_ATTRIB expr { $$ = new BinaryOperationNode(new ArrayUseNode(currentSymbolTable->useSymbol($1),$3),ATTRIB,$6); }
+attribution : refs T_IDENTIFIER T_ATTRIB expr { Node *id = currentSymbolTable->useSymbol($2); for(int i=0;i<$1;i++) id = new UnaryOperationNode(REF,id); $$ = new BinaryOperationNode(id, ATTRIB, $4); }
+            | refs T_IDENTIFIER T_POPEN expr T_PCLOSE T_ATTRIB expr { Node *id = new ArrayUseNode(currentSymbolTable->useSymbol($2),$4); for(int i=0;i<$1;i++) id = new UnaryOperationNode(REF,id); $$ = new BinaryOperationNode(id,ATTRIB,$7); }
 ;
 
 ifthenelse  : T_IF expr T_NEWLINE T_THEN T_CBOPEN T_NEWLINE scoped-block T_CBCLOSE else { $$ = new IfThenElseNode($2, $7, $9); }
@@ -192,6 +202,8 @@ expr  : V_INT { $$ = new IntegerNode($1); }
       | T_BOOL expr { $$ = new UnaryOperationNode(CBOOL, $2); }
       | T_MINUS expr %prec T_UNARYMINUS { $$ = new UnaryOperationNode(NEGATIVE, $2); }
       | T_NOT expr { $$ = new UnaryOperationNode(NOT, $2); }
+      | T_REF expr { $$ = new UnaryOperationNode(REF, $2); }
+      | T_ADDR expr { $$ = new UnaryOperationNode(ADDR, $2); }
       | expr T_PLUS expr { $$ = new BinaryOperationNode($1, PLUS, $3); }
       | expr T_MINUS expr { $$ = new BinaryOperationNode($1, MINUS, $3); }
       | expr T_TIMES expr { $$ = new BinaryOperationNode($1, TIMES, $3); }

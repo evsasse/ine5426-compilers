@@ -22,8 +22,21 @@ std::string operationName(Operation op){
     case AND: return "and"; break;
     case OR: return "or"; break;
     case NOT: return "negation"; break;
+    case REF: return "reference"; break;
+    case ADDR: return "address"; break;
   }
 };
+std::string operationSymbol(Operation op){
+  switch(op){
+    case NEGATIVE: return " -u"; break;
+    case NOT: return " !"; break;
+    case CINT: return " [int]"; break;
+    case CFLOAT: return " [float]"; break;
+    case CBOOL: return " [bool]"; break;
+    case REF: return " [ref]"; break;
+    case ADDR: return " [addr]"; break;
+  }
+}
 std::string typeFullName(ValueType type){
   switch(type){
     case INT: return "integer"; break;
@@ -188,15 +201,26 @@ Node(right->type), operation(operation), right(right){
   else if(operation == CBOOL){
     Node::type = BOOL;
   }
+  else if(operation == REF){
+    IdentifierNode *id = dynamic_cast<IdentifierNode*>(right);
+    if(id && id->refs > 0){
+      // TODO fix, should ref--, but would change globally :(
+    }else{
+      yyerror("semantic error: reference operation expects a pointer");
+    }
+  }
+  else if(operation == ADDR){
+    IdentifierNode *id = dynamic_cast<IdentifierNode*>(right);
+    id = (id)? id : dynamic_cast<ArrayUseNode*>(right)->identifier;
+    if(id){
+      // TODO fix, should ref++, but would change globally :(
+    }else{
+      yyerror("semantic error: address operation expects a variable or array item");
+    }
+  }
 };
 void UnaryOperationNode::print(){
-  switch(operation){
-    case NEGATIVE: std::cout << " -u"; break;
-    case NOT: std::cout << " !"; break;
-    case CINT: std::cout << " [int]"; break;
-    case CFLOAT: std::cout << " [float]"; break;
-    case CBOOL: std::cout << " [bool]"; break;
-  }
+  std::cout << operationSymbol(operation);
   right->print();
 }
 
@@ -208,12 +232,21 @@ void IdentifierNode::print(){
   // }
 }
 
-void MainDeclarationNode::print(){
-  switch(type){
-    case INT: std::cout << "int var:"; break;
-    case FLOAT: std::cout << "float var:"; break;
-    case BOOL: std::cout << "bool var:"; break;
+MainDeclarationNode::MainDeclarationNode(DeclarationNode *first, ValueType type, int refs) :
+Node(type), first(first), refs(refs) {
+  if(refs > 0){
+    DeclarationNode *next = first;
+    while(next){
+      next->identifier->refs = refs;
+      next = next->next;
+    }
   }
+};
+void MainDeclarationNode::print(){
+  std::cout << typeName(type);
+  for(int i = 0; i < refs; i++)
+   std::cout << " ref";
+  std::cout << " var:";
   first->print();
 }
 
@@ -300,7 +333,15 @@ void FunctionCallNode::print(){
 }
 
 void ArrayDeclarationNode::print(){
-  std::cout << typeName(type) << " array: ";
+  int refs = static_cast<IdentifierNode*>(*(decls->begin()))->refs;
+  if(refs > 0){
+    std::cout << typeName(type);
+    for(int i = 0; i < refs; i++)
+      std::cout << " ref";
+    std::cout << " array: ";
+  }else
+    std::cout << typeName(type) << " array: ";
+
   for(Node *node : *decls){
     std::cout << static_cast<IdentifierNode*>(node)->name << " (size:";
     static_cast<IdentifierNode*>(node)->value->print();

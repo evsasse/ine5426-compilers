@@ -6,10 +6,12 @@
 enum Operation { NEGATIVE, NOT, CINT, CFLOAT, CBOOL,
                  ATTRIB, PLUS, MINUS, TIMES, DIVIDE,
                  AND, OR, EQUAL, DIFFERENT, GREATER, GREATEROREQUAL,
-                 LESS, LESSOREQUAL };
+                 LESS, LESSOREQUAL,
+                 REF, ADDR };
 enum ValueType { INT, FLOAT, BOOL };
 
 std::string operationName(Operation op);
+std::string operationSymbol(Operation op);
 std::string typeFullName(ValueType type);
 std::string typeName(ValueType type);
 
@@ -86,8 +88,9 @@ public:
   std::string name;
   ListNode *params;
   Node *value;
+  int refs;
   IdentifierNode(std::string name, ValueType type, Node* value = nullptr, ListNode *params = nullptr) :
-    Node(type), name(name), value(value), params(params) {};
+    Node(type), name(name), value(value), params(params), refs(0) {};
   void print();
 };
 
@@ -102,8 +105,8 @@ public:
 class MainDeclarationNode : public Node {
 public:
   DeclarationNode *first;
-  MainDeclarationNode(DeclarationNode *first, ValueType type) :
-    Node(type), first(first) {};
+  int refs;
+  MainDeclarationNode(DeclarationNode *first, ValueType type, int refs = 0);
   void print();
 };
 
