@@ -6,10 +6,12 @@
 enum Operation { NEGATIVE, NOT, CINT, CFLOAT, CBOOL,
                  ATTRIB, PLUS, MINUS, TIMES, DIVIDE,
                  AND, OR, EQUAL, DIFFERENT, GREATER, GREATEROREQUAL,
-                 LESS, LESSOREQUAL };
+                 LESS, LESSOREQUAL,
+                 REF, ADDR };
 enum ValueType { INT, FLOAT, BOOL };
 
 std::string operationName(Operation op);
+std::string operationSymbol(Operation op);
 std::string typeFullName(ValueType type);
 std::string typeName(ValueType type);
 
