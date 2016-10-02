@@ -45,6 +45,12 @@ test:
 	-./lukacompiler < tests/v0.7/input/1.in | diff -B - tests/v0.7/expected/1.ex >> test
 	echo "v0.7/2" >> test
 	-./lukacompiler < tests/v0.7/input/2.in | diff -B - tests/v0.7/expected/2.ex >> test
+	echo "v0.8/1" >> test
+	-./lukacompiler < tests/v0.8/input/1.in | diff -B - tests/v0.8/expected/1.ex >> test
+	echo "v0.8/2" >> test
+	-./lukacompiler < tests/v0.8/input/2.in | diff -B - tests/v0.8/expected/2.ex >> test
+	echo "v0.8/3" >> test
+	-./lukacompiler < tests/v0.8/input/3.in | diff -B - tests/v0.8/expected/3.ex >> test
 
 errortest:
 	echo "v0.1/1" > errortest
