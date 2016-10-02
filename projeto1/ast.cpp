@@ -33,8 +33,8 @@ std::string operationSymbol(Operation op){
     case CINT: return " [int]"; break;
     case CFLOAT: return " [float]"; break;
     case CBOOL: return " [bool]"; break;
-    case REF: return " ref"; break;
-    case ADDR: return " addr"; break;
+    case REF: return " [ref]"; break;
+    case ADDR: return " [addr]"; break;
   }
 }
 std::string typeFullName(ValueType type){
@@ -211,7 +211,7 @@ Node(right->type), operation(operation), right(right){
   }
   else if(operation == ADDR){
     IdentifierNode *id = dynamic_cast<IdentifierNode*>(right);
-    id == (id)? id : dynamic_cast<ArrayUseNode*>(right)->identifier;
+    id = (id)? id : dynamic_cast<ArrayUseNode*>(right)->identifier;
     if(id){
       // TODO fix, should ref++, but would change globally :(
     }else{
