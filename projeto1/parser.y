@@ -169,6 +169,8 @@ func-def    : %empty { $$ = nullptr; }
 
 attribution : T_IDENTIFIER T_ATTRIB expr { $$ = new BinaryOperationNode(currentSymbolTable->useSymbol($1), ATTRIB, $3); }
             | T_IDENTIFIER T_POPEN expr T_PCLOSE T_ATTRIB expr { $$ = new BinaryOperationNode(new ArrayUseNode(currentSymbolTable->useSymbol($1),$3),ATTRIB,$6); }
+attribution : refs T_IDENTIFIER T_ATTRIB expr { Node *id = currentSymbolTable->useSymbol($2); for(int i=0;i<$1;i++) id = new UnaryOperationNode(REF,id); $$ = new BinaryOperationNode(id, ATTRIB, $4); }
+            | refs T_IDENTIFIER T_POPEN expr T_PCLOSE T_ATTRIB expr { Node *id = new ArrayUseNode(currentSymbolTable->useSymbol($2),$4); for(int i=0;i<$1;i++) id = new UnaryOperationNode(REF,id); $$ = new BinaryOperationNode(id,ATTRIB,$7); }
 ;
 
 ifthenelse  : T_IF expr T_NEWLINE T_THEN T_CBOPEN T_NEWLINE scoped-block T_CBCLOSE else { $$ = new IfThenElseNode($2, $7, $9); }
