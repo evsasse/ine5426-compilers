@@ -300,7 +300,15 @@ void FunctionCallNode::print(){
 }
 
 void ArrayDeclarationNode::print(){
-  std::cout << typeName(type) << " array: ";
+  int refs = static_cast<IdentifierNode*>(*(decls->begin()))->refs;
+  if(refs > 0){
+    std::cout << typeName(type);
+    for(int i = 0; i < refs; i++)
+      std::cout << " ref";
+    std::cout << " array: ";
+  }else
+    std::cout << typeName(type) << " array: ";
+
   for(Node *node : *decls){
     std::cout << static_cast<IdentifierNode*>(node)->name << " (size:";
     static_cast<IdentifierNode*>(node)->value->print();

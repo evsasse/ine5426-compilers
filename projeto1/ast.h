@@ -86,8 +86,9 @@ public:
   std::string name;
   ListNode *params;
   Node *value;
+  int refs;
   IdentifierNode(std::string name, ValueType type, Node* value = nullptr, ListNode *params = nullptr) :
-    Node(type), name(name), value(value), params(params) {};
+    Node(type), name(name), value(value), params(params), refs(0) {};
   void print();
 };
 
