@@ -25,7 +25,6 @@
 %token <val_str> T_IDENTIFIER
 %token T_NEWLINE
 %token T_RET
-%token T_REF T_ADDR
 
 %token T_POPEN T_PCLOSE
 %token T_ATTRIB T_COMMA
@@ -43,6 +42,7 @@
 %left T_INT T_FLOAT T_BOOL
 %left T_PLUS T_MINUS
 %left T_TIMES T_DIVIDE
+%left T_REF T_ADDR
 %nonassoc T_UNARYMINUS
 
 // V_ for values
