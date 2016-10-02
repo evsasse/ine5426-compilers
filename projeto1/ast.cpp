@@ -208,12 +208,21 @@ void IdentifierNode::print(){
   // }
 }
 
-void MainDeclarationNode::print(){
-  switch(type){
-    case INT: std::cout << "int var:"; break;
-    case FLOAT: std::cout << "float var:"; break;
-    case BOOL: std::cout << "bool var:"; break;
+MainDeclarationNode::MainDeclarationNode(DeclarationNode *first, ValueType type, int refs) :
+Node(type), first(first), refs(refs) {
+  if(refs > 0){
+    DeclarationNode *next = first;
+    while(next){
+      next->identifier->refs = refs;
+      next = next->next;
+    }
   }
+};
+void MainDeclarationNode::print(){
+  std::cout << typeName(type);
+  for(int i = 0; i < refs; i++)
+   std::cout << " ref";
+  std::cout << " var:";
   first->print();
 }
 

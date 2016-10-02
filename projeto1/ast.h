@@ -103,8 +103,8 @@ public:
 class MainDeclarationNode : public Node {
 public:
   DeclarationNode *first;
-  MainDeclarationNode(DeclarationNode *first, ValueType type) :
-    Node(type), first(first) {};
+  int refs;
+  MainDeclarationNode(DeclarationNode *first, ValueType type, int refs = 0);
   void print();
 };
 

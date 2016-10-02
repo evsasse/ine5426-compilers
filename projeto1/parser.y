@@ -104,6 +104,7 @@ decl-int-opts : D_FUN T_IDENTIFIER T_POPEN { currentSymbolTable = new SymbolTabl
               | decl-ints { $$ = new MainDeclarationNode(static_cast<DeclarationNode*>($1), INT); }
               | decl-arr-ints { $$ = new ArrayDeclarationNode($1,INT); }
               | refs decl-arr-ints { for(Node *node : *$2){ static_cast<IdentifierNode*>(node)->refs = $1; }; $$ = new ArrayDeclarationNode($2,INT); }
+              | refs decl-ints { $$ = new MainDeclarationNode(static_cast<DeclarationNode*>($2), INT, $1); }
 ;
 decl-ints   : decl-int T_COMMA decl-ints { static_cast<DeclarationNode*>($1)->next = static_cast<DeclarationNode*>($3); }
             | decl-int
