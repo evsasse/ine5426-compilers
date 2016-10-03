@@ -51,6 +51,11 @@ std::string typeName(ValueType type){
     case BOOL: return "bool"; break;
   }
 };
+std::string typeRefsFullName(ValueType type, int refs){
+  std::string s = typeFullName(type);
+  for(int i=0;i<refs;i++) s+= " pointer";
+  return s;
+}
 
 int BlockNode::tabs = -1; //
 void BlockNode::print(){
@@ -93,6 +98,55 @@ void BoolNode::print(){
 
 BinaryOperationNode::BinaryOperationNode(Node *left, Operation operation, Node *right) :
 Node(left->type), left(left), operation(operation), right(right) {
+  bool considerRef = 1;
+
+  int lrefs = 0;
+  Node *_left = left;
+  while(UnaryOperationNode *leftref = dynamic_cast<UnaryOperationNode*>(_left)){
+    if(leftref->operation == REF){
+      lrefs--;
+      _left = leftref->right;
+    }else if(leftref->operation == ADDR){
+      lrefs++;
+      _left = leftref->right;
+    }else{
+      break;
+    }
+  }
+  if(IdentifierNode *id = dynamic_cast<IdentifierNode*>(_left)){
+    lrefs += id->refs;
+  }else if(ArrayUseNode *arr = dynamic_cast<ArrayUseNode*>(_left)){
+    lrefs += arr->identifier->refs;
+  }else{
+    considerRef = 0;
+  }
+
+  int rrefs = 0;
+  Node *_right= right;
+  while(UnaryOperationNode *rightref = dynamic_cast<UnaryOperationNode*>(_right)){
+    if(rightref->operation == REF){
+      rrefs--;
+      _right = rightref->right;
+    }else if(rightref->operation == ADDR){
+      rrefs++;
+      _right = rightref->right;
+    }else{
+      break;
+    }
+  }
+  if(IdentifierNode *id = dynamic_cast<IdentifierNode*>(_right)){
+    rrefs += id->refs;
+  }else if(ArrayUseNode *arr = dynamic_cast<ArrayUseNode*>(_right)){
+    rrefs += arr->identifier->refs;
+  }else{
+    considerRef = 0;
+  }
+
+  // considerRef = considerRef && lrefs != rrefs;
+  // if(considerRef){
+  //   yyerror(("semantic error: "+operationName(operation)+" operation expects "+typeRefsFullName(left->type,lrefs)+" but received "+typeRefsFullName(right->type,rrefs)).c_str());
+  // }
+
   if(operation == GREATER || operation == GREATEROREQUAL || operation == LESS || operation == LESSOREQUAL){
     //relational operation
     Node::type = BOOL;
@@ -140,6 +194,9 @@ Node(left->type), left(left), operation(operation), right(right) {
   }
   else if(operation == ATTRIB){
     //attribution operation
+    if(considerRef && lrefs != rrefs){
+      yyerror(("semantic error: "+operationName(operation)+" operation expects "+typeRefsFullName(left->type,lrefs)+" but received "+typeRefsFullName(right->type,rrefs)).c_str());
+    }
     if(left->type == FLOAT && right->type == INT){
       this-> right = new UnaryOperationNode(CFLOAT,right);
       return;
@@ -158,6 +215,7 @@ Node(left->type), left(left), operation(operation), right(right) {
       yyerror(("semantic error: "+operationName(operation)+" operation expected boolean but received "+typeFullName(right->type)).c_str());
     }
   }
+
 };
 void BinaryOperationNode::print(){
   //std::cout << "BinaryOperationNode{";
