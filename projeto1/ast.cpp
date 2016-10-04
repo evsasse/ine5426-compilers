@@ -98,7 +98,8 @@ void BoolNode::print(){
 
 BinaryOperationNode::BinaryOperationNode(Node *left, Operation operation, Node *right) :
 Node(left->type), left(left), operation(operation), right(right) {
-  bool considerRef = 1;
+  bool considerRefL = 1;
+  bool considerRefR = 1;
 
   int lrefs = 0;
   Node *_left = left;
@@ -118,7 +119,7 @@ Node(left->type), left(left), operation(operation), right(right) {
   }else if(ArrayUseNode *arr = dynamic_cast<ArrayUseNode*>(_left)){
     lrefs += arr->identifier->refs;
   }else{
-    considerRef = 0;
+    considerRefL = 0;
   }
 
   int rrefs = 0;
@@ -139,7 +140,7 @@ Node(left->type), left(left), operation(operation), right(right) {
   }else if(ArrayUseNode *arr = dynamic_cast<ArrayUseNode*>(_right)){
     rrefs += arr->identifier->refs;
   }else{
-    considerRef = 0;
+    considerRefR = 0;
   }
 
   // considerRef = considerRef && lrefs != rrefs;
@@ -156,6 +157,9 @@ Node(left->type), left(left), operation(operation), right(right) {
     else if(left->type == INT && right->type == FLOAT){
       this->left = new UnaryOperationNode(CFLOAT,left);
     }
+    else if(lrefs > 0 || rrefs > 0){
+      yyerror(("semantic error: "+operationName(operation)+" operation expected integer or float but received "+typeRefsFullName(left->type,lrefs)+" and "+typeRefsFullName(right->type,rrefs)).c_str());
+    }
     else if(left->type != INT && left->type != FLOAT && right->type != INT && right->type != FLOAT){
       yyerror(("semantic error: "+operationName(operation)+" operation expected integer or float but received "+typeFullName(left->type)+" and "+typeFullName(right->type)).c_str());
     }
@@ -169,7 +173,10 @@ Node(left->type), left(left), operation(operation), right(right) {
   else if(operation == EQUAL || operation == DIFFERENT){
     //comparison operation
     Node::type = BOOL;
-    if(left->type != right->type && !(left->type == INT && right->type == FLOAT) && !(left->type == FLOAT && right->type == INT)){
+    if(lrefs != rrefs){
+      yyerror(("semantic error: "+operationName(operation)+" operation expected "+typeRefsFullName(left->type,lrefs)+" but received "+typeRefsFullName(right->type,rrefs)).c_str());
+    }
+    else if(left->type != right->type && !(left->type == INT && right->type == FLOAT) && !(left->type == FLOAT && right->type == INT)){
       yyerror(("semantic error: "+operationName(operation)+" operation expected "+typeFullName(left->type)+" but received "+typeFullName(right->type)).c_str());
     }
   }
@@ -181,6 +188,9 @@ Node(left->type), left(left), operation(operation), right(right) {
     else if(left->type == INT && right->type == FLOAT){
       Node::type = FLOAT;
       this->left = new UnaryOperationNode(CFLOAT,left);
+    }
+    else if(lrefs > 0 || rrefs > 0){
+      yyerror(("semantic error: "+operationName(operation)+" operation expected integer or float but received "+typeRefsFullName(left->type,lrefs)+" and "+typeRefsFullName(right->type,rrefs)).c_str());
     }
     else if(left->type != INT && left->type != FLOAT && right->type != INT && right->type != FLOAT){
       yyerror(("semantic error: "+operationName(operation)+" operation expected integer or float but received "+typeFullName(left->type)+" and "+typeFullName(right->type)).c_str());
@@ -194,7 +204,7 @@ Node(left->type), left(left), operation(operation), right(right) {
   }
   else if(operation == ATTRIB){
     //attribution operation
-    if(considerRef && lrefs != rrefs){
+    if(considerRefL && considerRefR && lrefs != rrefs){
       yyerror(("semantic error: "+operationName(operation)+" operation expects "+typeRefsFullName(left->type,lrefs)+" but received "+typeRefsFullName(right->type,rrefs)).c_str());
     }
     if(left->type == FLOAT && right->type == INT){
@@ -208,7 +218,10 @@ Node(left->type), left(left), operation(operation), right(right) {
   else if(operation == AND || operation == OR){
     //logical operations
     Node::type = BOOL;
-    if(left->type != BOOL){
+    if(lrefs > 0 || rrefs > 0){
+      yyerror(("semantic error: "+operationName(operation)+" operation expected boolean but received "+typeRefsFullName(left->type,lrefs)+" and "+typeRefsFullName(right->type,rrefs)).c_str());
+    }
+    else if(left->type != BOOL){
       yyerror(("semantic error: "+operationName(operation)+" operation expected boolean but received "+typeFullName(left->type)).c_str());
     }
     else if(right->type != BOOL){
