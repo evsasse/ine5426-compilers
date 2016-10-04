@@ -14,6 +14,7 @@ std::string operationName(Operation op);
 std::string operationSymbol(Operation op);
 std::string typeFullName(ValueType type);
 std::string typeName(ValueType type);
+std::string typeRefsFullName(ValueType type, int refs);
 
 class Node {
 public:
